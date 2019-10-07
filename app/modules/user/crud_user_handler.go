@@ -108,6 +108,6 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user models.User
-	h.DB.Preload("Keys").Preload("Tribes").First(&user, params["user_id"])
+	h.DB.Preload("Keys").Preload("Tribes").Preload("SharedKeys").First(&user, params["user_id"])
 	json.NewEncoder(w).Encode(&user)
 }

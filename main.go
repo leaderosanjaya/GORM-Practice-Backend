@@ -26,6 +26,7 @@ func main() {
 	if err != nil {
 		fmt.Printf("[main.go][ConnectDB]: %s\n", err)
 	}
+
 	defer db.Close()
 	// new handler
 	userHandler := new(user.Handler)
@@ -37,7 +38,12 @@ func main() {
 	keyHandler.DB = db
 
 	//Update schema to models.go
-	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{})
+	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{})
+	db.Model(&models.KeyShares{}).AddForeignKey("user_id", "users(user_id)", "CASCADE", "CASCADE")
+	db.Model(&models.KeyShares{}).AddForeignKey("key_id", "keys(key_id)", "CASCADE", "CASCADE")
+
+	db.Model(&models.TribeAssign{}).AddForeignKey("user_id", "users(user_id)", "CASCADE", "CASCADE")
+	db.Model(&models.TribeAssign{}).AddForeignKey("tribe_id", "tribes(tribe_id)", "CASCADE", "CASCADE")
 
 	//New Router
 	router := mux.NewRouter()

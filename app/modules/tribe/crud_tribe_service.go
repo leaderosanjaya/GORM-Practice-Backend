@@ -11,8 +11,7 @@ func (h *Handler) CreateTribe(tribe models.Tribe) error {
 	if dbc := h.DB.Create(&tribe); dbc.Error != nil {
 		return dbc.Error
 	}
-	h.DB.Model(&tribe).Association("Lead").Replace(lead)
-	h.DB.Model(&lead).Association("Tribes").Append(tribe)
+	h.DB.Model(&lead).Association("Tribes").Append(models.TribeAssign{UserID: lead.ID, TribeID: tribe.ID})
 	return nil
 }
 
