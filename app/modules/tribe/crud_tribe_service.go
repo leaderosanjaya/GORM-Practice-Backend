@@ -1,6 +1,6 @@
 package tribe
 
-import "github.com/GORM-practice/app/models"
+import "GORM-practice-backend/app/models"
 
 func (h *Handler) CreateTribe(tribe models.Tribe) error {
 	//Get tribe lead id

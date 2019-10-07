@@ -14,6 +14,7 @@ type User struct {
 	Role      int       `json:"role" gorm:"default:0"`
 }
 
+// Tribe struct, tribe data model in DB
 type Tribe struct {
 	ID          uint      `json:"tribe_id" gorm:"primary_key;column:tribe_id"`
 	CreatedAt   time.Time `json:"-"`
@@ -25,6 +26,7 @@ type Tribe struct {
 	TotalKey    int       `json:"total_key" gorm:"not null;default:0"`
 }
 
+// Key struct, key data model in DB
 type Key struct {
 	ID          uint      `json:"key_id" gorm:"primary_key;column:key_id"`
 	CreatedAt   time.Time `json:"created_at"`

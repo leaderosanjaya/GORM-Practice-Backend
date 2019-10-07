@@ -1,13 +1,13 @@
 package user
 
 import (
-	"github.com/GORM-practice/app/models"
+	"GORM-practice-backend/app/models"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (h *Handler) InsertUser(user models.User) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}

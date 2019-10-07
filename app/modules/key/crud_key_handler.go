@@ -7,13 +7,14 @@ import (
 	"net/http"
 	"rc-practice-backend/app/helpers"
 
-	"github.com/GORM-practice/app/models"
+	"GORM-practice-backend/app/models"
 )
 
 //TO DO IN KEY PACKAGE
 //Update Key By ID (Input Using GORM, more to it later)
 //Get Key By Filter(Name, Type, Platform, App Version, Tribe, Status)
 
+// CreateKeyHandler create key
 func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -50,6 +51,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// DeleteKeyHandler delete key
 func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -67,7 +69,7 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	keyDel := KeyDel{}
+	keyDel := Del{}
 	err = json.Unmarshal(body, &keyDel)
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][UnmarshalJSON]: %s", err)
