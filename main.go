@@ -55,17 +55,17 @@ func main() {
 
 	//Create and delete user
 	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST")
-	router.HandleFunc("/api/users", userHandler.DeleteUserHandler).Methods("DELETE")
+	router.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
 	//Get user By ID
 	router.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")
 	//Get user by filter
 	// router.HandleFunc("/api/users", userHandler.GetUsers).Methods("GET")
 	// router.HandleFunc("/api/user/{user_id:[0-9]+}/keys", tribeHandler.DeleteKeyHandler).Methods("GET")
-	// router.HandleFunc("/api/user/{user_id:[0-9]+}/")
+	// router.HandleFunc("/api/user/{user_id:[0-9]+}/tribes")
 
 	//Create and delete tribe
 	router.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
-	router.HandleFunc("/api/tribes", tribeHandler.DeleteTribeHandler).Methods("DELETE")
+	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE")
 
 	//get tribe by id
 	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
@@ -75,9 +75,12 @@ func main() {
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/users").Methods("GET")
 	//Create and delete Key
 	router.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")
-	router.HandleFunc("/api/keys", keyHandler.DeleteKeyHandler).Methods("DELETE")
+	router.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE")
 	//Get key by ID
-	// router.HandleFunc("/api/keys/{key_id:[0-9]+}").Methods("GET")
+	router.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")
+	//Update Key by ID
+	router.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.UpdateKeyByID).Methods("PUT")
+
 	//Get keys by filter
 	// router.HandleFunc("/api/keys/").Methods("GET")
 

@@ -71,28 +71,9 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		Message: "Deleted User",
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Printf("[CRUD User Read Body][User]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
+	params := mux.Vars(r)
 
-	userdel := UserDel{}
-	err = json.Unmarshal(body, &userdel)
-	if err != nil {
-		fmt.Printf("[CRUD User Unmarshal JSON][User]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
-
-	if err = h.DeleteUser(userdel.UID); err != nil {
+	if err = h.DeleteUser(params["user_id"]); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
@@ -111,3 +92,8 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	h.DB.Preload("Keys").Preload("Tribes").Preload("SharedKeys").First(&user, params["user_id"])
 	json.NewEncoder(w).Encode(&user)
 }
+
+// func (h *Handler) GetUserKeyByID(w http.ResponseWriter, r *http.Request) {
+// 	params := mux.Vars(r)
+// 	var keys
+// }

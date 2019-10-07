@@ -54,28 +54,9 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 		Message: "Deleted Tribe",
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][ReadBody]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
+	params := mux.Vars(r)
 
-	tribeDel := TribeDel{}
-	err = json.Unmarshal(body, &tribeDel)
-	if err != nil {
-		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][UnmarshalJSON]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
-
-	if err = h.DeleteTribe(tribeDel.UID); err != nil {
+	if err = h.DeleteTribe(params["tribe_id"]); err != nil {
 		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][DeleteTribe]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"

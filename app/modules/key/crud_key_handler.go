@@ -8,6 +8,7 @@ import (
 	"rc-practice-backend/app/helpers"
 
 	"github.com/GORM-practice/app/models"
+	"github.com/gorilla/mux"
 )
 
 //TO DO IN KEY PACKAGE
@@ -57,28 +58,9 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		Message: "Deleted Key",
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][ReadBody]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
+	params := mux.Vars(r)
 
-	keyDel := KeyDel{}
-	err = json.Unmarshal(body, &keyDel)
-	if err != nil {
-		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][UnmarshalJSON]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
-
-	if err = h.DeleteKey(keyDel.UID); err != nil {
+	if err = h.DeleteKey(params["key_id"]); err != nil {
 		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][DeleteTribe]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
@@ -92,3 +74,80 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 //Getkey by user
+func (h *Handler) GetKeyByID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var key models.Key
+	h.DB.Preload("Shares").First(&key, params["key_id"])
+	json.NewEncoder(w).Encode(&key)
+}
+
+//Update key
+func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	message := JSONMessage{
+		Status:  "Success",
+		Message: "Updated Key",
+	}
+
+	params := mux.Vars(r)
+	var key models.Key
+	h.DB.First(&key, params["key_id"])
+	//read edit info
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("[crud_key_handler.go][UpdateKeyByID][ReadBody]: %s\n", err)
+		message.Status = "Failed"
+		message.Message = "Error when updating key"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	}
+
+	updateKey := models.Key{}
+	if err = json.Unmarshal(body, &updateKey); err != nil {
+		fmt.Printf("[crud_key_handler.go][UpdateKeyByID][UnmarshalJSON]: %s\n", err)
+		message.Status = "Failed"
+		message.Message = "Error when updating key"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	}
+
+	//Checks things to be updated
+	if updateKey.KeyName != "" {
+		key.KeyName = updateKey.KeyName
+	}
+	if updateKey.KeyValue != "" {
+		key.KeyValue = updateKey.KeyValue
+	}
+	if updateKey.KeyType != "" {
+		key.KeyType = updateKey.KeyType
+	}
+	if updateKey.Description != "" {
+		key.Description = updateKey.Description
+	}
+	if updateKey.Platform != "" {
+		key.Platform = updateKey.Platform
+	}
+	if updateKey.ExpireDate.IsZero() {
+		key.ExpireDate = updateKey.ExpireDate
+	}
+	if updateKey.UserID != 0 {
+		key.UserID = updateKey.UserID
+	}
+	if updateKey.TribeID != 0 {
+		key.TribeID = updateKey.TribeID
+	}
+	if updateKey.AppVersion != "" {
+		key.AppVersion = updateKey.AppVersion
+	}
+	if updateKey.Status != "" {
+		key.Status = updateKey.Status
+	}
+	h.DB.Save(&key)
+
+	message = JSONMessage{
+		Status:  "Success",
+		Message: "Updated Key",
+	}
+	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	return
+}
