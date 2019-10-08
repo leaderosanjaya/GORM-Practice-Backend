@@ -44,6 +44,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		log.Println(err)
 	}
 
+	user.Password = ""
 	resp := map[string]interface{}{"status": true, "message": "logged in"}
 	resp["token"] = tokenString
 	resp["user"] = user
