@@ -1,11 +1,13 @@
 package key
 
 import (
+	"github.com/gorilla/mux"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"rc-practice-backend/app/helpers"
+	"strconv"
 
 	"GORM-practice-backend/app/models"
 )
@@ -59,28 +61,18 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		Message: "Deleted Key",
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	params := mux.Vars(r)
+	targetUint, err := strconv.ParseUint(params["key_id"], 10, 32)
 	if err != nil {
-		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][ReadBody]: %s", err)
+		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][ParseUint]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
-
-	keyDel := Del{}
-	err = json.Unmarshal(body, &keyDel)
-	if err != nil {
-		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][UnmarshalJSON]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
-
-	if err = h.DeleteKey(keyDel.UID); err != nil {
+	
+	if err = h.DeleteKey(uint(targetUint)); err != nil {
 		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][DeleteTribe]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
@@ -93,4 +85,99 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//Getkey by user
+//GetKeyByID by user
+func (h *Handler) GetKeyByID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var key models.Key
+	h.DB.Preload("Shares").First(&key, params["key_id"])
+	json.NewEncoder(w).Encode(&key)
+}
+
+//UpdateKeyByID key
+func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	message := JSONMessage{
+		Status:  "Success",
+		Message: "Updated Key",
+	}
+
+	params := mux.Vars(r)
+	var key models.Key
+	h.DB.First(&key, params["key_id"])
+	//read edit info
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("[crud_key_handler.go][UpdateKeyByID][ReadBody]: %s\n", err)
+		message.Status = "Failed"
+		message.Message = "Error when updating key"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	}
+
+	updateKey := models.Key{}
+	if err = json.Unmarshal(body, &updateKey); err != nil {
+		fmt.Printf("[crud_key_handler.go][UpdateKeyByID][UnmarshalJSON]: %s\n", err)
+		message.Status = "Failed"
+		message.Message = "Error when updating key"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	}
+
+	//Checks things to be updated
+	if updateKey.KeyName != "" {
+		key.KeyName = updateKey.KeyName
+	}
+	if updateKey.KeyValue != "" {
+		key.KeyValue = updateKey.KeyValue
+	}
+	if updateKey.KeyType != "" {
+		key.KeyType = updateKey.KeyType
+	}
+	if updateKey.Description != "" {
+		key.Description = updateKey.Description
+	}
+	if updateKey.Platform != "" {
+		key.Platform = updateKey.Platform
+	}
+	if updateKey.ExpireDate.IsZero() {
+		key.ExpireDate = updateKey.ExpireDate
+	}
+	if updateKey.UserID != 0 {
+		key.UserID = updateKey.UserID
+	}
+	if updateKey.TribeID != 0 {
+		key.TribeID = updateKey.TribeID
+	}
+	if updateKey.AppVersion != "" {
+		key.AppVersion = updateKey.AppVersion
+	}
+	if updateKey.Status != "" {
+		key.Status = updateKey.Status
+	}
+	h.DB.Save(&key)
+
+	message = JSONMessage{
+		Status:  "Success",
+		Message: "Updated Key",
+	}
+	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	return
+}
+
+// GetKeysByUserID as said
+func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var keys []models.Key
+
+	h.DB.Preload("Shares").Where("user_id = ?", params["user_id"]).Find(&keys)
+	json.NewEncoder(w).Encode(&keys)
+}
+
+// GetKeysByTribeID as said
+func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var keys []models.Key
+
+	h.DB.Preload("Shares").Where("tribe_id = ?", params["tribe_id"]).Find(&keys)
+	json.NewEncoder(w).Encode(&keys)
+}

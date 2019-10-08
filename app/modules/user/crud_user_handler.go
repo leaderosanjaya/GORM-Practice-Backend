@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"GORM-practice-backend/app/helpers"
 	"GORM-practice-backend/app/models"
@@ -71,9 +72,11 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		Message: "Deleted User",
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	params := mux.Vars(r)
+
+	targetUint, err := strconv.ParseUint(params["user_id"], 10, 32)
 	if err != nil {
-		fmt.Printf("[CRUD User Read Body][User]: %s", err)
+		fmt.Printf("[crud_user_handler.go][DeleteUserHandler][ParseUint]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
 		status = http.StatusBadRequest
@@ -81,18 +84,7 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userdel := UserDel{}
-	err = json.Unmarshal(body, &userdel)
-	if err != nil {
-		fmt.Printf("[CRUD User Unmarshal JSON][User]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
-
-	if err = h.DeleteUser(userdel.UID); err != nil {
+	if err = h.DeleteUser(uint(targetUint)); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"

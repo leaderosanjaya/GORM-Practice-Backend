@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"GORM-practice-backend/app/helpers"
 	"GORM-practice-backend/app/models"
@@ -57,9 +58,11 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 		Message: "Deleted Tribe",
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	params := mux.Vars(r)
+
+	targetUint, err := strconv.ParseUint(params["tribe_id"], 10, 32)
 	if err != nil {
-		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][ReadBody]: %s", err)
+		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][ParseUint]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
 		status = http.StatusBadRequest
@@ -67,18 +70,7 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tribeDel := Del{}
-	err = json.Unmarshal(body, &tribeDel)
-	if err != nil {
-		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][UnmarshalJSON]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-		return
-	}
-
-	if err = h.DeleteTribe(tribeDel.UID); err != nil {
+	if err = h.DeleteTribe(uint(targetUint)); err != nil {
 		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][DeleteTribe]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
