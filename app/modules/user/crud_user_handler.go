@@ -1,15 +1,15 @@
 package user
 
 import (
-	"GORM-practice-backend/app/modules/auth"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
-	"GORM-practice-backend/app/helpers"
-	"GORM-practice-backend/app/models"
+	"github.com/GORM-practice/app/helpers"
+	"github.com/GORM-practice/app/models"
+	"github.com/GORM-practice/app/modules/auth"
 	"github.com/gorilla/mux"
 )
 
@@ -86,7 +86,7 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
-	
+
 	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.RenderJSON(w, []byte(`

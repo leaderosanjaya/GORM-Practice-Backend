@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"GORM-practice-backend/app/models"
-	"GORM-practice-backend/app/modules/auth"
-	"GORM-practice-backend/app/modules/key"
-	"GORM-practice-backend/app/modules/tribe"
-	"GORM-practice-backend/app/modules/user"
-	"GORM-practice-backend/config"
+	"github.com/GORM-practice-backend/app/models"
+	"github.com/GORM-practice-backend/app/modules/auth"
+	"github.com/GORM-practice-backend/app/modules/key"
+	"github.com/GORM-practice-backend/app/modules/tribe"
+	"github.com/GORM-practice-backend/app/modules/user"
+	"github.com/GORM-practice-backend/config"
 
 	gorillaHandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
