@@ -31,6 +31,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		UserID: user.ID,
 		Name:   user.LastName,
 		Email:  user.Email,
+		Role:   user.Role,
 		StandardClaims: &jwt.StandardClaims{
 			ExpiresAt: expiresAt,
 		},
@@ -43,7 +44,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		log.Println(err)
 	}
 
-	resp := map[string]interface{}{"status": false, "message": "logged in"}
+	resp := map[string]interface{}{"status": true, "message": "logged in"}
 	resp["token"] = tokenString
 	resp["user"] = user
 	return resp

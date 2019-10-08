@@ -6,8 +6,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -22,9 +24,9 @@ const user key = "user"
 func JwtVerify(next http.Handler) http.Handler {
 	return (http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		var header = r.Header.Get("x-access-token")
+		var header = r.Header.Get("Authorization")
 
-		header = strings.TrimSpace(header)
+		header = strings.Split(header, " ")[1]
 
 		if header == "" {
 			w.WriteHeader(http.StatusForbidden)
@@ -48,9 +50,10 @@ func JwtVerify(next http.Handler) http.Handler {
 			return []byte(os.Getenv("SECRET_KEY")), nil
 		})
 		if err != nil {
+			log.Println(err)
 			helpers.RenderJSON(w, []byte(`
 			{
-				message: "error",
+				message: "error, no auth token found",
 			}
 			`), http.StatusForbidden)
 			return
@@ -72,4 +75,45 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	resp := h.FindOne(user.Email, user.Password)
 	json.NewEncoder(w).Encode(resp)
+}
+
+// ExtractToken to extract token from http request header
+func ExtractToken(r *http.Request) string {
+	keys := r.URL.Query()
+	token := keys.Get("token")
+	if token != "" {
+		return token
+	}
+
+	bearerToken := r.Header.Get("Authorization")
+	if token = strings.Split(bearerToken, " ")[1]; token != "" {
+		return token
+	}
+
+	return ""
+}
+
+// ExtractTokenUID extract token from request
+func ExtractTokenUID(r *http.Request) (uint64, int64, error) {
+	tokenString := ExtractToken(r)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing error")
+		}
+		return []byte(os.Getenv("SECRET_KEY")), nil
+	})
+	if err != nil {
+		return 0, 0, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		uid, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["UserID"]), 10, 32)
+		role, err := strconv.ParseInt(fmt.Sprintf("%.0f", claims["Role"]), 10, 32)
+		if err != nil {
+			return 0, 0, err
+		}
+		return uid, role, nil
+	}
+	return 0, 0, err
 }

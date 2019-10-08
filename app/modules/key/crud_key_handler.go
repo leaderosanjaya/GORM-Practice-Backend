@@ -1,13 +1,15 @@
 package key
 
 import (
-	"github.com/gorilla/mux"
+	"GORM-practice-backend/app/modules/auth"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"rc-practice-backend/app/helpers"
 	"strconv"
+
+	"github.com/gorilla/mux"
 
 	"GORM-practice-backend/app/models"
 )
@@ -41,6 +43,15 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	}
+	uid, _, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+	}
+
+	key.UserID = uint(uid)
 
 	if err = h.CreateKey(key); err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][InsertTribe]: %s\n", err)
@@ -71,7 +82,7 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
-	
+
 	if err = h.DeleteKey(uint(targetUint)); err != nil {
 		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][DeleteTribe]: %s", err)
 		message.Status = "Failed"
@@ -168,6 +179,23 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var keys []models.Key
+
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	if role < 1 || string(uid) != params["user_id"] { // Get user own key
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"you are not authorized to request",
+		}`), http.StatusUnauthorized)
+		return
+	}
 
 	h.DB.Preload("Shares").Where("user_id = ?", params["user_id"]).Find(&keys)
 	json.NewEncoder(w).Encode(&keys)

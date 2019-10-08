@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"GORM-practice-backend/app/modules/auth"
 	"GORM-practice-backend/app/models"
+	"GORM-practice-backend/app/modules/auth"
 	"GORM-practice-backend/app/modules/key"
 	"GORM-practice-backend/app/modules/tribe"
 	"GORM-practice-backend/app/modules/user"
@@ -65,7 +65,7 @@ func main() {
 
 	//Create and delete user
 	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST")
-	router.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
+	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
 	//Get user By ID
 	router.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")
 	//Get user keys by ID
@@ -89,7 +89,7 @@ func main() {
 	//Get tribe users
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/users").Methods("GET")
 	//Create and delete Key
-	router.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")
+	s.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE")
 	//Get key by ID
 	router.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")

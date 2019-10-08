@@ -1,6 +1,7 @@
 package user
 
 import (
+	"GORM-practice-backend/app/modules/auth"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -24,6 +25,7 @@ import (
 
 // }
 
+//CreateUserHandler create user
 func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -55,7 +57,7 @@ func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	if err = h.InsertUser(user); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
 		message.Status = "Failed"
-		message.Message = "Error while registering"
+		message.Message = err.Error()
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
@@ -65,6 +67,7 @@ func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// DeleteUserHandler delete user handler
 func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -83,6 +86,23 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
+	
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	if role != 2 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Need Super Admin Permission",
+		}`), http.StatusUnauthorized)
+		return
+	}
 
 	if err = h.DeleteUser(uint(targetUint)); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
@@ -97,6 +117,7 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+//GetUserByID get user by id
 func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user models.User
