@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/GORM-practice/app/helpers"
 	"github.com/GORM-practice/app/models"
@@ -56,7 +57,17 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
-	if err = h.DeleteTribe(params["tribe_id"]); err != nil {
+	targetUint, err := strconv.ParseUint(params["tribe_id"], 10, 32)
+	if err != nil {
+		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][ParseUint]: %s", err)
+		message.Status = "Failed"
+		message.Message = "Error while deleting"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
+	}
+
+	if err = h.DeleteTribe(uint(targetUint)); err != nil {
 		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][DeleteTribe]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"

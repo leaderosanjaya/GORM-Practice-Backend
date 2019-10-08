@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/GORM-practice/app/helpers"
 	"github.com/GORM-practice/app/models"
@@ -73,7 +74,17 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
-	if err = h.DeleteUser(params["user_id"]); err != nil {
+	targetUint, err := strconv.ParseUint(params["user_id"], 10, 32)
+	if err != nil {
+		fmt.Printf("[crud_user_handler.go][DeleteUserHandler][ParseUint]: %s", err)
+		message.Status = "Failed"
+		message.Message = "Error while deleting"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
+	}
+
+	if err = h.DeleteUser(uint(targetUint)); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
@@ -92,8 +103,3 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	h.DB.Preload("Keys").Preload("Tribes").Preload("SharedKeys").First(&user, params["user_id"])
 	json.NewEncoder(w).Encode(&user)
 }
-
-// func (h *Handler) GetUserKeyByID(w http.ResponseWriter, r *http.Request) {
-// 	params := mux.Vars(r)
-// 	var keys
-// }

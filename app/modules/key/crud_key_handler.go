@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"rc-practice-backend/app/helpers"
+	"strconv"
 
 	"github.com/GORM-practice/app/models"
 	"github.com/gorilla/mux"
@@ -59,8 +60,16 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
-
-	if err = h.DeleteKey(params["key_id"]); err != nil {
+	targetUint, err := strconv.ParseUint(params["key_id"], 10, 32)
+	if err != nil {
+		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][ParseUint]: %s", err)
+		message.Status = "Failed"
+		message.Message = "Error while deleting"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
+	}
+	if err = h.DeleteKey(uint(targetUint)); err != nil {
 		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][DeleteTribe]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
@@ -150,4 +159,20 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	}
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	return
+}
+
+func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var keys []models.Key
+
+	h.DB.Preload("Shares").Where("user_id = ?", params["user_id"]).Find(&keys)
+	json.NewEncoder(w).Encode(&keys)
+}
+
+func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var keys []models.Key
+
+	h.DB.Preload("Shares").Where("tribe_id = ?", params["tribe_id"]).Find(&keys)
+	json.NewEncoder(w).Encode(&keys)
 }

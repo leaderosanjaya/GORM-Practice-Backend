@@ -58,9 +58,14 @@ func main() {
 	router.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
 	//Get user By ID
 	router.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")
+	//Get user keys by ID
+	//IMPLEMENT FILTER SOON.
+	router.HandleFunc("/api/users/{user_id:[0-9]+}/keys", keyHandler.GetKeysByUserID).Methods("GET")
+	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET")
+	//Get shared keys by ID
+
 	//Get user by filter
 	// router.HandleFunc("/api/users", userHandler.GetUsers).Methods("GET")
-	// router.HandleFunc("/api/user/{user_id:[0-9]+}/keys", tribeHandler.DeleteKeyHandler).Methods("GET")
 	// router.HandleFunc("/api/user/{user_id:[0-9]+}/tribes")
 
 	//Create and delete tribe
