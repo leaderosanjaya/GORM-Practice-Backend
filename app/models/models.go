@@ -51,12 +51,12 @@ type Key struct {
 
 // KeyShares user association with key
 type KeyShares struct {
-	UserID uint
-	KeyID  uint
+	UserID uint `gorm:"primary_key"`
+	KeyID  uint `gorm:"primary_key"`
 }
 
 // TribeAssign user association with tribe
 type TribeAssign struct {
-	UserID  uint
-	TribeID uint
+	UserID  uint `gorm:"primary_key"`
+	TribeID uint `gorm:"primary_key"`
 }
