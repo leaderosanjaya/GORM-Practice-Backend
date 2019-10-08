@@ -2,14 +2,17 @@ package key
 
 import "github.com/jinzhu/gorm"
 
+// Handler handler struct
 type Handler struct {
 	DB *gorm.DB
 }
 
-type KeyDel struct {
+// Del struct, was KeyDel
+type Del struct {
 	UID uint `json:"uid"`
 }
 
+// JSONMessage struct
 type JSONMessage struct {
 	Status    string `json:"status"`
 	ErrorCode string `json:"errorCode"`

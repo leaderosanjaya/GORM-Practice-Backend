@@ -1,6 +1,7 @@
 package key
 
 import (
+	"GORM-practice-backend/app/modules/auth"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,14 +9,16 @@ import (
 	"rc-practice-backend/app/helpers"
 	"strconv"
 
-	"github.com/GORM-practice/app/models"
 	"github.com/gorilla/mux"
+
+	"GORM-practice-backend/app/models"
 )
 
 //TO DO IN KEY PACKAGE
 //Update Key By ID (Input Using GORM, more to it later)
 //Get Key By Filter(Name, Type, Platform, App Version, Tribe, Status)
 
+// CreateKeyHandler create key
 func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -40,6 +43,15 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	}
+	uid, _, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+	}
+
+	key.UserID = uint(uid)
 
 	if err = h.CreateKey(key); err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][InsertTribe]: %s\n", err)
@@ -52,6 +64,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// DeleteKeyHandler delete key
 func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -69,6 +82,7 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
+
 	if err = h.DeleteKey(uint(targetUint)); err != nil {
 		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][DeleteTribe]: %s", err)
 		message.Status = "Failed"
@@ -82,7 +96,7 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//Getkey by user
+//GetKeyByID by user
 func (h *Handler) GetKeyByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var key models.Key
@@ -90,7 +104,7 @@ func (h *Handler) GetKeyByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&key)
 }
 
-//Update key
+//UpdateKeyByID key
 func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -161,14 +175,33 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// GetKeysByUserID as said
 func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var keys []models.Key
+
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	if role < 1 || string(uid) != params["user_id"] { // Get user own key
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"you are not authorized to request",
+		}`), http.StatusUnauthorized)
+		return
+	}
 
 	h.DB.Preload("Shares").Where("user_id = ?", params["user_id"]).Find(&keys)
 	json.NewEncoder(w).Encode(&keys)
 }
 
+// GetKeysByTribeID as said
 func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var keys []models.Key

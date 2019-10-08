@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/GORM-practice/app/helpers"
-	"github.com/GORM-practice/app/models"
+	"GORM-practice-backend/app/helpers"
+	"GORM-practice-backend/app/models"
+
 	"github.com/gorilla/mux"
 )
 
+// CreateTribeHandler to handle createtribe
 func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -48,6 +50,7 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+//DeleteTribeHandler handle tribe deletion
 func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -80,6 +83,7 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// GetTribeByID get tribe by id
 func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var tribe models.Tribe

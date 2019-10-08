@@ -1,8 +1,8 @@
 package key
 
-import "github.com/GORM-practice/app/models"
+import "GORM-practice-backend/app/models"
 
-//Creates
+//CreateKey create key
 func (h *Handler) CreateKey(key models.Key) error {
 	//add keys from the user
 	//add keys from the user
@@ -20,7 +20,7 @@ func (h *Handler) CreateKey(key models.Key) error {
 	return nil
 }
 
-//Deletes Key by providing the given Key ID
+//DeleteKey by providing the given Key ID
 func (h *Handler) DeleteKey(targetID uint) error {
 	//remove keys from the user
 	//remove keys from the tribe, edit tribe key count
