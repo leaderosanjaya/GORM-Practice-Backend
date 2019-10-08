@@ -2,6 +2,8 @@ package tribe
 
 import "GORM-practice-backend/app/models"
 
+
+// CreateTribe create tribe
 func (h *Handler) CreateTribe(tribe models.Tribe) error {
 	//Get tribe lead id
 	//Insert tribe to lead user
@@ -15,6 +17,7 @@ func (h *Handler) CreateTribe(tribe models.Tribe) error {
 	return nil
 }
 
+// DeleteTribe delete tribe
 func (h *Handler) DeleteTribe(targetID uint) error {
 	if dbc := h.DB.Where("tribe_id = ?", targetID).Delete(models.Tribe{}); dbc.Error != nil {
 		return dbc.Error

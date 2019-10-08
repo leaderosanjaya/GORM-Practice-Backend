@@ -1,24 +1,22 @@
 package auth
 
 import (
-	"encoding/json"
-	"GORM-Practice-Backend/app/models"
+	"GORM-practice-backend/app/helpers"
+	"GORM-practice-backend/app/models"
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/joho/godotenv"
-	"os"
-	"github.com/dgrijalva/jwt-go"
-	"GORM-Practice-Backend/app/helpers"
 	"net/http"
+	"os"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 )
 
-type key int
+type key string
 
-const (
-    user key = iota
-    // ...
-)
+const user key = "user"
 
 // JwtVerify Verify jwt token for every request
 func JwtVerify(next http.Handler) http.Handler {
@@ -46,7 +44,6 @@ func JwtVerify(next http.Handler) http.Handler {
 			return
 		}
 
-
 		_, err = jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
 			return []byte(os.Getenv("SECRET_KEY")), nil
 		})
@@ -58,7 +55,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			`), http.StatusForbidden)
 			return
 		}
-		
+
 		ctx := context.WithValue(r.Context(), user, tk)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}))
@@ -69,7 +66,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{}
 	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {
-		resp := map[string]interface{}{"status":false, "message": "Invalid request"}
+		resp := map[string]interface{}{"status": false, "message": "Invalid request"}
 		json.NewEncoder(w).Encode(resp)
 	}
 

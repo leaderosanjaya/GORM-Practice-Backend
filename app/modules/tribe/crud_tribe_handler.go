@@ -8,9 +8,11 @@ import (
 
 	"GORM-practice-backend/app/helpers"
 	"GORM-practice-backend/app/models"
+
 	"github.com/gorilla/mux"
 )
 
+// CreateTribeHandler to handle createtribe
 func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -47,6 +49,7 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+//DeleteTribeHandler handle tribe deletion
 func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -64,7 +67,7 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tribeDel := TribeDel{}
+	tribeDel := Del{}
 	err = json.Unmarshal(body, &tribeDel)
 	if err != nil {
 		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][UnmarshalJSON]: %s", err)
@@ -88,6 +91,7 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// GetTribeByID get tribe by id
 func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var tribe models.Tribe

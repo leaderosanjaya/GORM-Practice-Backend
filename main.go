@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/GORM-practice/app/models"
-	"github.com/GORM-practice/app/modules/key"
-	"github.com/GORM-practice/app/modules/tribe"
-	"github.com/GORM-practice/app/modules/user"
-	"github.com/GORM-practice/config"
+	"GORM-practice-backend/app/modules/auth"
+	"GORM-practice-backend/app/models"
+	"GORM-practice-backend/app/modules/key"
+	"GORM-practice-backend/app/modules/tribe"
+	"GORM-practice-backend/app/modules/user"
+	"GORM-practice-backend/config"
 
 	gorillaHandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -32,10 +33,13 @@ func main() {
 	userHandler := new(user.Handler)
 	tribeHandler := new(tribe.Handler)
 	keyHandler := new(key.Handler)
+	authHandler := new(auth.Handler)
+
 	//Pass DB to handler
 	userHandler.DB = db
 	tribeHandler.DB = db
 	keyHandler.DB = db
+	authHandler.DB = db
 
 	//Update schema to models.go
 	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{})
@@ -51,7 +55,13 @@ func main() {
 	methods := gorillaHandler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
 	origins := gorillaHandler.AllowedOrigins([]string{"*"})
 
+	s := router.PathPrefix("/auth").Subrouter()
+	s.Use(auth.JwtVerify)
+
 	router.HandleFunc("/api", index).Methods("GET")
+
+	//Login user
+	router.HandleFunc("/api/login", authHandler.Login).Methods("POST")
 
 	//Create and delete user
 	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST")
@@ -75,7 +85,7 @@ func main() {
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/users").Methods("GET")
 	//Create and delete Key
 	router.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")
-	router.HandleFunc("/api/keys", keyHandler.DeleteKeyHandler).Methods("DELETE")
+	s.HandleFunc("/api/keys/{key_id}", keyHandler.DeleteKeyHandler).Methods("DELETE")
 	//Get key by ID
 	// router.HandleFunc("/api/keys/{key_id:[0-9]+}").Methods("GET")
 	//Get keys by filter

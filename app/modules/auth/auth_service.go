@@ -1,35 +1,36 @@
 package auth
 
 import (
+	"GORM-practice-backend/app/models"
 	"log"
 	"os"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
-	"time"
-	"GORM-Practice-Backend/app/models"
 )
 
 // FindOne verify user email and password
 func (h *Handler) FindOne(email, password string) map[string]interface{} {
 	user := &models.User{}
-	
-	if err := h.DB.Debug().Where("email= ?", email).First(user).Error; err!=nil {
+
+	if err := h.DB.Debug().Where("email= ?", email).First(user).Error; err != nil {
 		resp := map[string]interface{}{"status": false, "message": "email not found"}
 		return resp
 	}
 
-	expiresAt := time.Now().Add(time.Minute*1).Unix()
+	expiresAt := time.Now().Add(time.Minute * 2).Unix()
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		resp := map[string]interface{}{"status": false, "message":"credential false"}
+		resp := map[string]interface{}{"status": false, "message": "credential false"}
 		return resp
 	}
 
 	tk := &Token{
 		UserID: user.ID,
-		Name: user.LastName,
-		Email: user.Email,
+		Name:   user.LastName,
+		Email:  user.Email,
 		StandardClaims: &jwt.StandardClaims{
 			ExpiresAt: expiresAt,
 		},
@@ -42,7 +43,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		log.Println(err)
 	}
 
-	resp := map[string]interface{}{"status":false, "message": "logged in"}
+	resp := map[string]interface{}{"status": false, "message": "logged in"}
 	resp["token"] = tokenString
 	resp["user"] = user
 	return resp

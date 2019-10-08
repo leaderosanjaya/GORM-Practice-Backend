@@ -2,14 +2,17 @@ package tribe
 
 import "github.com/jinzhu/gorm"
 
+// Handler struct objet
 type Handler struct {
 	DB *gorm.DB
 }
 
-type TribeDel struct {
+// Del Struct objet
+type Del struct {
 	UID uint `json:"uid"`
 }
 
+// JSONMessage struct object
 type JSONMessage struct {
 	Status    string `json:"status"`
 	ErrorCode string `json:"errorCode"`

@@ -27,7 +27,7 @@ type Tribe struct {
 	Description string        `json:"description" gorm:"type:varchar(200)"`
 	TotalMember int           `json:"total_member" gorm:"not null;default:1"`
 	TotalKey    int           `json:"total_key" gorm:"not null;default:0"`
-	Keys        []Key         `json:"keys" gorm:"foreignkey:TribeID`
+	Keys        []Key         `json:"keys" gorm:"foreignkey:TribeID"`
 	Members     []TribeAssign `json:"members"`
 }
 
@@ -51,11 +51,13 @@ type Key struct {
 	Shares      []KeyShares `json:"shares"`
 }
 
+// KeyShares user association with key
 type KeyShares struct {
 	UserID uint
 	KeyID  uint
 }
 
+// TribeAssign user association with tribe
 type TribeAssign struct {
 	UserID  uint
 	TribeID uint
