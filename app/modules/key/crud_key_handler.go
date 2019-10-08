@@ -160,3 +160,19 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	return
 }
+
+func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var keys []models.Key
+
+	h.DB.Preload("Shares").Where("user_id = ?", params["user_id"]).Find(&keys)
+	json.NewEncoder(w).Encode(&keys)
+}
+
+func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var keys []models.Key
+
+	h.DB.Preload("Shares").Where("tribe_id = ?", params["tribe_id"]).Find(&keys)
+	json.NewEncoder(w).Encode(&keys)
+}

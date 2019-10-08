@@ -103,8 +103,3 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	h.DB.Preload("Keys").Preload("Tribes").Preload("SharedKeys").First(&user, params["user_id"])
 	json.NewEncoder(w).Encode(&user)
 }
-
-// func (h *Handler) GetUserKeyByID(w http.ResponseWriter, r *http.Request) {
-// 	params := mux.Vars(r)
-// 	var keys
-// }
