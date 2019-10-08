@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"GORM-practice-backend/app/models"
 	"log"
 	"os"
 	"time"
 
+	"github.com/GORM-practice/app/models"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )

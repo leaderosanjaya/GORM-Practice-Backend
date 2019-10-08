@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"GORM-practice-backend/app/helpers"
-	"GORM-practice-backend/app/models"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -12,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/GORM-practice/app/helpers"
+	"github.com/GORM-practice/app/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/joho/godotenv"
 )
