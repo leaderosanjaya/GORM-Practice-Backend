@@ -27,8 +27,6 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		var header = r.Header.Get("Authorization")
 
-		header = strings.Split(header, " ")[1]
-
 		if header == "" {
 			w.WriteHeader(http.StatusForbidden)
 			helpers.RenderJSON(w, []byte(`
@@ -38,6 +36,19 @@ func JwtVerify(next http.Handler) http.Handler {
 			`), http.StatusBadRequest)
 			return
 		}
+
+		headerSplit := strings.Split(header, " ")
+		if len(headerSplit) != 2 {
+			w.WriteHeader(http.StatusForbidden)
+			helpers.RenderJSON(w, []byte(`
+			{
+				message: "missing auth token",
+			}
+			`), http.StatusBadRequest)
+			return
+		}
+
+		header = headerSplit[1]
 
 		tk := &Token{}
 

@@ -1,7 +1,6 @@
 package key
 
 import (
-	"GORM-practice-backend/app/modules/key"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +10,7 @@ import (
 	"GORM-practice-backend/app/helpers"
 	"GORM-practice-backend/app/models"
 	"GORM-practice-backend/app/modules/auth"
+
 	"github.com/gorilla/mux"
 )
 
@@ -115,6 +115,24 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var key models.Key
 	h.DB.First(&key, params["key_id"])
+	
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	if role < 1 && uint64(key.UserID) != uid { // Get user own key
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"you are not authorized to request",
+		}`), http.StatusUnauthorized)
+		return
+	}
+
 	//read edit info
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -134,37 +152,7 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	}
 
-	//Checks things to be updated
-	if updateKey.KeyName != "" {
-		key.KeyName = updateKey.KeyName
-	}
-	if updateKey.KeyValue != "" {
-		key.KeyValue = updateKey.KeyValue
-	}
-	if updateKey.KeyType != "" {
-		key.KeyType = updateKey.KeyType
-	}
-	if updateKey.Description != "" {
-		key.Description = updateKey.Description
-	}
-	if updateKey.Platform != "" {
-		key.Platform = updateKey.Platform
-	}
-	if updateKey.ExpireDate.IsZero() {
-		key.ExpireDate = updateKey.ExpireDate
-	}
-	if updateKey.UserID != 0 {
-		key.UserID = updateKey.UserID
-	}
-	if updateKey.TribeID != 0 {
-		key.TribeID = updateKey.TribeID
-	}
-	if updateKey.AppVersion != "" {
-		key.AppVersion = updateKey.AppVersion
-	}
-	if updateKey.Status != "" {
-		key.Status = updateKey.Status
-	}
+	updateValue(&updateKey, &key)
 	h.DB.Save(&key)
 
 	message = JSONMessage{
@@ -189,7 +177,7 @@ func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if role < 1 || string(uid) != params["user_id"] { // Get user own key
+	if paramUserID, _ := strconv.ParseUint(fmt.Sprintf("%s", params["user_id"]), 10, 32); paramUserID != uid && role < 1 { // Get user own key
 		helpers.RenderJSON(w, []byte(`
 		{
 			"message":"you are not authorized to request",
@@ -201,15 +189,43 @@ func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&keys)
 }
 
-// GetKeysByTribeID as said
+// GetKeysByTribeID as said (belum pakai auth)
 func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var keys []models.Key
+
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	var user models.User
+	h.DB.First(&user, uint(uid))
+
+	paramTribeID, _ := strconv.ParseUint(fmt.Sprintf("%s", params["tribe_id"]), 10, 32)
+
+	if role < 1 {
+		var ok = false
+		for _, tribe := range user.Tribes {
+			if tribe.TribeID == uint(paramTribeID) {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return
+		}
+	}
 
 	h.DB.Preload("Shares").Where("tribe_id = ?", params["tribe_id"]).Find(&keys)
 	json.NewEncoder(w).Encode(&keys)
 }
 
+// ShareKey relasi antara user dan key
 func (h *Handler) ShareKey(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -219,7 +235,7 @@ func (h *Handler) ShareKey(w http.ResponseWriter, r *http.Request) {
 
 	//get tribe uint64
 	params := mux.Vars(r)
-	keyUint, err := strconv.ParseUint(params["tribe_id"], 10, 32)
+	keyUint, err := strconv.ParseUint(params["key_id"], 10, 32)
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][ShareKey][ParseUint]: %s", err)
 		message.Status = "Failed"
@@ -236,6 +252,7 @@ func (h *Handler) ShareKey(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when trying to share key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	var assign Assign
@@ -246,11 +263,30 @@ func (h *Handler) ShareKey(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when trying to share key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
-	var tribe models.Tribe
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	var key models.Key
 	h.DB.First(&key, uint(keyUint))
-	h.DB.Model(&key).Association("Shares").Append(models.KeyShares{UserID: assign.UID, KeyID: uint(KeyUint)})
+
+	if role < 1 && uint(uid) != key.UserID { // Get user own key
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"you are not authorized to request",
+		}`), http.StatusUnauthorized)
+		return
+	}
+
+	h.DB.Model(&key).Association("Shares").Append(models.KeyShares{UserID: assign.UID, KeyID: uint(keyUint)})
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	return
