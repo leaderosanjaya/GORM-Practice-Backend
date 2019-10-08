@@ -12,6 +12,10 @@ type Del struct {
 	UID uint `json:"uid"`
 }
 
+type Assign struct {
+	UID uint `json:"user_id"`
+}
+
 // JSONMessage struct object
 type JSONMessage struct {
 	Status    string `json:"status"`

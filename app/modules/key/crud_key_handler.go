@@ -208,3 +208,49 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 	h.DB.Preload("Shares").Where("tribe_id = ?", params["tribe_id"]).Find(&keys)
 	json.NewEncoder(w).Encode(&keys)
 }
+
+func (h *Handler) ShareKey(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	message := JSONMessage{
+		Status:  "Success",
+		Message: "Shared Key Successfully",
+	}
+
+	//get tribe uint64
+	params := mux.Vars(r)
+	keyUint, err := strconv.ParseUint(params["tribe_id"], 10, 32)
+	if err != nil {
+		fmt.Printf("[crud_key_handler.go][ShareKey][ParseUint]: %s", err)
+		message.Status = "Failed"
+		message.Message = "Error when trying to share key"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("[crud_key_handler.go][ShareKey][ReadBody]: %s\n", err)
+		message.Status = "Failed"
+		message.Message = "Error when trying to share key"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	}
+
+	var assign Assign
+	//read body, get user id
+	if err = json.Unmarshal(body, &assign); err != nil {
+		fmt.Printf("[crud_key_handler.go][ShareKey][UnmarshalJSON]: %s\n", err)
+		message.Status = "Failed"
+		message.Message = "Error when trying to share key"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	}
+
+	var tribe models.Tribe
+	h.DB.First(&key, uint(keyUint))
+	h.DB.Model(&key).Association("Shares").Append(models.KeyShares{UserID: assign.UID, KeyID: uint(KeyUint)})
+
+	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	return
+}
