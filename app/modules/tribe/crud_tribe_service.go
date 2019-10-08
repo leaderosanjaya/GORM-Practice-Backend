@@ -1,6 +1,6 @@
 package tribe
 
-import "github.com/GORM-practice/app/models"
+import "GORM-practice-backend/app/models"
 
 // CreateTribe create tribe
 func (h *Handler) CreateTribe(tribe models.Tribe) error {

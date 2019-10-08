@@ -1,15 +1,16 @@
 package key
 
 import (
+	"GORM-practice-backend/app/modules/key"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
-	"github.com/GORM-practice/app/helpers"
-	"github.com/GORM-practice/app/models"
-	"github.com/GORM-practice/app/modules/auth"
+	"GORM-practice-backend/app/helpers"
+	"GORM-practice-backend/app/models"
+	"GORM-practice-backend/app/modules/auth"
 	"github.com/gorilla/mux"
 )
 
