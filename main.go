@@ -109,6 +109,7 @@ func main() {
 	//Remove Key Share
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
 
+
 	//Get keys by filter
 	// router.HandleFunc("/api/keys/").Methods("GET")
 
@@ -118,6 +119,7 @@ func main() {
 	//Delete Key by Name
 
 	//Update Key by Name, given new value
+	//change it to execute from createkey
 	err = remoteConfigHandler.PublishConfig()
 	if err != nil {
 		fmt.Println(err)

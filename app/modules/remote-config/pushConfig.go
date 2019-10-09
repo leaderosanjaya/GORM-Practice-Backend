@@ -44,6 +44,8 @@ func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 	if resp.StatusCode == http.StatusOK {
 		fmt.Println("Successfully Pushed new config file")
 		// fmt.Println("Etag from server: {%s}", resp.Header["Etag"][0])
+	} else {
+		fmt.Println("Failed to push new config file")
 	}
 	return nil
 }
