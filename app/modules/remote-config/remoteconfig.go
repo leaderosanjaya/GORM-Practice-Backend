@@ -17,7 +17,7 @@ func (h *Handler) GetEtag() (string, error) {
 	//Set up new Client HTTP
 	client := &http.Client{}
 
-	req, err := http.NewRequest(http.MethodGet, h.RemoteConfigUrl, nil)
+	req, err := http.NewRequest(http.MethodGet, h.RemoteConfigURL, nil)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +69,7 @@ func (h *Handler) Init() error {
 	h.ProjectID = os.Getenv("PROJECT_ID")
 	baseURL := "https://firebaseremoteconfig.googleapis.com"
 	remoteConfigEndpoint := "v1/projects/" + h.ProjectID + "/remoteConfig"
-	h.RemoteConfigUrl = baseURL + "/" + remoteConfigEndpoint
+	h.RemoteConfigURL = baseURL + "/" + remoteConfigEndpoint
 
 	err := h.GetToken()
 	if err != nil {

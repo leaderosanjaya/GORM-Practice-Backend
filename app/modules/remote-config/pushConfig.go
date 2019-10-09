@@ -25,7 +25,7 @@ func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 	//Set up new Client HTTP
 	client := &http.Client{}
 
-	req, err := http.NewRequest(http.MethodPut, h.RemoteConfigUrl, bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPut, h.RemoteConfigURL, bytes.NewReader(data))
 	if err != nil {
 		return err
 		// log.Fatalf("Error: %v\n", err)
