@@ -84,6 +84,8 @@ func main() {
 
 	//Assign user to tribe
 	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")
+	//Remove user from tribe
+	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
 	//get tribe by id
 	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
 	//Get tribe keys
@@ -100,6 +102,9 @@ func main() {
 
 	//Assign Key Share
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.ShareKey).Methods("POST")
+	//Remove Key Share
+	router.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
+  
 	//Get keys by filter
 	// router.HandleFunc("/api/keys/").Methods("GET")
 
