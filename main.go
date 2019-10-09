@@ -43,6 +43,7 @@ func main() {
 	keyHandler.DB = db
 	authHandler.DB = db
 	remoteConfigHandler.DB = db
+	keyHandler.PushRemoteConfig = remoteConfigHandler.PublishConfig
 
 	//Update schema to models.go
 	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{})

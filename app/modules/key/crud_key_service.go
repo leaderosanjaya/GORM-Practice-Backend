@@ -61,4 +61,5 @@ func updateValue(updateKey *models.Key, key *models.Key) {
 	if updateKey.Status != "" {
 		key.Status = updateKey.Status
 	}
+	return
 }

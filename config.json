@@ -1,5 +1,10 @@
 {
  "parameters": {
+  "test_key_3": {
+   "defaultValue": {
+    "value": "true"
+   }
+  },
   "test_key_edit": {
    "defaultValue": {
     "value": "false"

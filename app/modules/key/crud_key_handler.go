@@ -65,6 +65,8 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
+
+	h.PushRemoteConfig()
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 }
 
@@ -123,6 +125,8 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
+
+	h.PushRemoteConfig()
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 }
@@ -215,6 +219,7 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	updateValue(&updateKey, &key)
 	h.DB.Save(&key)
 
+	h.PushRemoteConfig()
 	message = JSONMessage{
 		Status:  "Success",
 		Message: "Updated Key",
