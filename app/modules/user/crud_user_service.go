@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/GORM-practice/app/models"
+
 	"golang.org/x/crypto/bcrypt"
 )
 

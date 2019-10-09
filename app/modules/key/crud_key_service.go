@@ -29,3 +29,36 @@ func (h *Handler) DeleteKey(targetID uint) error {
 	}
 	return nil
 }
+
+func updateValue(updateKey *models.Key, key *models.Key) {
+	if updateKey.KeyName != "" {
+		key.KeyName = updateKey.KeyName
+	}
+	if updateKey.KeyValue != "" {
+		key.KeyValue = updateKey.KeyValue
+	}
+	if updateKey.KeyType != "" {
+		key.KeyType = updateKey.KeyType
+	}
+	if updateKey.Description != "" {
+		key.Description = updateKey.Description
+	}
+	if updateKey.Platform != "" {
+		key.Platform = updateKey.Platform
+	}
+	if updateKey.ExpireDate.IsZero() {
+		key.ExpireDate = updateKey.ExpireDate
+	}
+	if updateKey.UserID != 0 {
+		key.UserID = updateKey.UserID
+	}
+	if updateKey.TribeID != 0 {
+		key.TribeID = updateKey.TribeID
+	}
+	if updateKey.AppVersion != "" {
+		key.AppVersion = updateKey.AppVersion
+	}
+	if updateKey.Status != "" {
+		key.Status = updateKey.Status
+	}
+}

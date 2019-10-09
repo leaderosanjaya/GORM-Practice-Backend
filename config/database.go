@@ -6,10 +6,12 @@ import (
 	"strconv"
 
 	"github.com/jinzhu/gorm"
+	// postgres driver for gorm
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
 )
 
+// ConnectDB to connect to DB
 func ConnectDB() (*gorm.DB, error) {
 	err := godotenv.Load()
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/GORM-practice/app/helpers"
 	"github.com/GORM-practice/app/models"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/joho/godotenv"
 )
@@ -26,8 +27,6 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		var header = r.Header.Get("Authorization")
 
-		header = strings.Split(header, " ")[1]
-
 		if header == "" {
 			w.WriteHeader(http.StatusForbidden)
 			helpers.RenderJSON(w, []byte(`
@@ -37,6 +36,19 @@ func JwtVerify(next http.Handler) http.Handler {
 			`), http.StatusBadRequest)
 			return
 		}
+
+		headerSplit := strings.Split(header, " ")
+		if len(headerSplit) != 2 {
+			w.WriteHeader(http.StatusForbidden)
+			helpers.RenderJSON(w, []byte(`
+			{
+				message: "missing auth token",
+			}
+			`), http.StatusBadRequest)
+			return
+		}
+
+		header = headerSplit[1]
 
 		tk := &Token{}
 
@@ -53,7 +65,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			log.Println(err)
 			helpers.RenderJSON(w, []byte(`
 			{
-				message: "error, no auth token found",
+				message: "error, no auth token found, or your auth token is false",
 			}
 			`), http.StatusForbidden)
 			return
