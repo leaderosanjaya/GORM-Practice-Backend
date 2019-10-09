@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-
 	"github.com/GORM-practice/app/models"
 	"github.com/GORM-practice/app/modules/auth"
 	"github.com/GORM-practice/app/modules/key"
@@ -109,7 +108,6 @@ func main() {
 	//Remove Key Share
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
 
-
 	//Get keys by filter
 	// router.HandleFunc("/api/keys/").Methods("GET")
 
@@ -120,10 +118,10 @@ func main() {
 
 	//Update Key by Name, given new value
 	//change it to execute from createkey
-	err = remoteConfigHandler.PublishConfig()
-	if err != nil {
-		fmt.Println(err)
-	}
+	// err = remoteConfigHandler.PublishConfig()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
 	fmt.Printf("[%s] Listening on Port 8080\n", time.Now())
 	log.Fatal(http.ListenAndServe(":8080", gorillaHandler.CORS(headers, methods, origins)(router)))
