@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+
 	"github.com/GORM-practice/app/models"
 	"github.com/GORM-practice/app/modules/auth"
 	"github.com/GORM-practice/app/modules/key"
@@ -13,6 +14,7 @@ import (
 	"github.com/GORM-practice/app/modules/tribe"
 	"github.com/GORM-practice/app/modules/user"
 	"github.com/GORM-practice/config"
+
 	gorillaHandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -69,7 +71,7 @@ func main() {
 	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST")
 	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
 	//Get user By ID
-	router.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")
+	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")
 	//Get user keys by ID
 	//IMPLEMENT FILTER SOON.
 	s.HandleFunc("/api/users/{user_id:[0-9]+}/keys", keyHandler.GetKeysByUserID).Methods("GET")
@@ -105,7 +107,8 @@ func main() {
 	//Assign Key Share
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.ShareKey).Methods("POST")
 	//Remove Key Share
-	router.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
+	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
+
 
 	//Get keys by filter
 	// router.HandleFunc("/api/keys/").Methods("GET")

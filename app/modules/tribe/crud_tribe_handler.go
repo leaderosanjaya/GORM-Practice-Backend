@@ -6,10 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-  
-	"github.com/GORM-practice/app/helpers"
-	"github.com/GORM-practice/app/models"
-  
+
+	"GORM-practice-backend/app/helpers"
+	"GORM-practice-backend/app/models"
 	"github.com/gorilla/mux"
 )
 

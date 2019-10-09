@@ -12,7 +12,7 @@ type Del struct {
 	UID uint `json:"uid"`
 }
 
-// Assign assign user id 
+// Assign assign user id
 type Assign struct {
 	UID uint `json:"user_id"`
 }
