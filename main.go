@@ -71,7 +71,7 @@ func main() {
 	//Get user keys by ID
 	//IMPLEMENT FILTER SOON.
 	s.HandleFunc("/api/users/{user_id:[0-9]+}/keys", keyHandler.GetKeysByUserID).Methods("GET")
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET")
 	//Get shared keys by ID
 
 	//Get user by filter
@@ -94,7 +94,7 @@ func main() {
 	s.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE")
 	//Get key by ID
-	router.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")
+	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")
 	//Update Key by ID
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.UpdateKeyByID).Methods("PUT")
 

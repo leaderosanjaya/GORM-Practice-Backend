@@ -65,7 +65,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			log.Println(err)
 			helpers.RenderJSON(w, []byte(`
 			{
-				message: "error, no auth token found",
+				message: "error, no auth token found, or your auth token is false",
 			}
 			`), http.StatusForbidden)
 			return

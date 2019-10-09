@@ -1,6 +1,7 @@
 package key
 
 import (
+	"log"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,7 +20,7 @@ import (
 //Get Key By Filter(Name, Type, Platform, App Version, Tribe, Status)
 
 // CreateKeyHandler create key
-func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {// create key, not unique
 	status := http.StatusOK
 	message := JSONMessage{
 		Status:  "Success",
@@ -43,6 +44,8 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	}
+
+	// Get user ID from token
 	uid, _, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.RenderJSON(w, []byte(`
@@ -65,7 +68,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteKeyHandler delete key
-func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {// check here, success message every time even after the key is deleted
 	status := http.StatusOK
 	message := JSONMessage{
 		Status:  "Success",
@@ -80,6 +83,33 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error while deleting"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
+	}
+
+	// Get user ID from token
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+	
+	userID := strconv.FormatUint(uid, 10)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var key models.Key
+	h.DB.Where("user_id = ?", userID).First(&key)
+
+	if key.UserID != uint(uid) && int(role) < 1{
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Failed to delete, you are not the owner of this key",
+		}`), http.StatusForbidden)
 		return
 	}
 
@@ -100,7 +130,27 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetKeyByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var key models.Key
+
+	// Get user ID from token
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
 	h.DB.Preload("Shares").First(&key, params["key_id"])
+
+	if key.UserID != uint(uid) && role < 1 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"you are not the owner of this key",
+		}`), http.StatusUnauthorized)
+		return
+	}
+
 	json.NewEncoder(w).Encode(&key)
 }
 
@@ -189,7 +239,7 @@ func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&keys)
 }
 
-// GetKeysByTribeID as said (belum pakai auth)
+// GetKeysByTribeID as said
 func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var keys []models.Key
@@ -266,6 +316,7 @@ func (h *Handler) ShareKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get User ID
 	uid, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.RenderJSON(w, []byte(`
