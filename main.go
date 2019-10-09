@@ -11,6 +11,7 @@ import (
 	"GORM-practice-backend/app/modules/key"
 	"GORM-practice-backend/app/modules/tribe"
 	"GORM-practice-backend/app/modules/user"
+	remoteconfig "GORM-practice-backend/app/modules/remote-config"
 	"GORM-practice-backend/config"
 
 	gorillaHandler "github.com/gorilla/handlers"

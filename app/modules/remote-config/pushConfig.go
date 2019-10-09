@@ -12,6 +12,8 @@ import (
 // FUNCTION PUBLISH
 // Accepts oauth2 token object & LATEST Etag string
 // Doesnt return anything.... should it tho?
+
+// PushData push data, return error
 func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 	//Attempt to read config file data
 	data, err := ioutil.ReadFile(h.ConfigFile)
@@ -48,6 +50,7 @@ func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 	return nil
 }
 
+// PublishConfig publish the config, return error
 func (h *Handler) PublishConfig() error {
 	//Generates the config
 	err := h.GenConfig()

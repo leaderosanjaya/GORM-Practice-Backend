@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/GORM-practice/app/models"
+	"GORM-practice-backend/app/models"
 )
 
 //Get all keys
 //Get key name, Key Value
 
+// GetKeyData get key data, return slice of key and error
 func (h *Handler) GetKeyData() ([]models.Key, error) {
 	var keys []models.Key
 	if dbc := h.DB.Where("status = ?", "active").Find(&keys); dbc.Error != nil {
@@ -20,6 +21,7 @@ func (h *Handler) GetKeyData() ([]models.Key, error) {
 
 //convert to Config data
 
+// ParseConfig parse the config, return config and error
 func (h *Handler) ParseConfig(keys []models.Key) (Config, error) {
 	var config Config
 	config.Parameters = map[string]Parameter{}
@@ -30,6 +32,7 @@ func (h *Handler) ParseConfig(keys []models.Key) (Config, error) {
 	return config, nil
 }
 
+// WriteConfig write config, return error
 func (h *Handler) WriteConfig(config Config) error {
 	file, err := json.MarshalIndent(config, "", " ")
 	if err != nil {
@@ -42,6 +45,7 @@ func (h *Handler) WriteConfig(config Config) error {
 	return nil
 }
 
+// GenConfig generate config, return error
 func (h *Handler) GenConfig() error {
 	keys, err := h.GetKeyData()
 	if err != nil {

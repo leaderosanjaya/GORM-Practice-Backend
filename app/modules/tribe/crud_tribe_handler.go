@@ -90,6 +90,7 @@ func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&tribe)
 }
 
+// AssignUser assign user in tribe by lead
 func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -136,6 +137,7 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// RemoveAssign remove user from tribe by lead
 func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
