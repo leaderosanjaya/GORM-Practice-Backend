@@ -1,7 +1,8 @@
 package user
 
 import (
-	"github.com/GORM-practice/app/models"
+	"errors"
+	"GORM-practice-backend/app/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,8 +21,8 @@ func (h *Handler) InsertUser(user models.User) error {
 
 // DeleteUser delete user from db
 func (h *Handler) DeleteUser(targetID uint) error {
-	if dbc := h.DB.Where("user_id = ?", targetID).Delete(models.User{}); dbc.Error != nil {
-		return dbc.Error
+	if row := h.DB.Where("user_id = ?", targetID).Delete(models.User{}).RowsAffected; row == 0 {
+		return errors.New("User does not exist in DB")
 	}
 	return nil
 }

@@ -83,13 +83,13 @@ func main() {
 	// router.HandleFunc("/api/user/{user_id:[0-9]+}/tribes")
 
 	//Create and delete tribe
-	router.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE")
+	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE")
 
 	//Assign user to tribe
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")
 	//Remove user from tribe
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
 	//get tribe by id
 	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
 	//Get tribe keys

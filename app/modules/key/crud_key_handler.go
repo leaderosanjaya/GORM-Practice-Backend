@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/GORM-practice/app/helpers"
-	"github.com/GORM-practice/app/models"
-	"github.com/GORM-practice/app/modules/auth"
+	"GORM-practice-backend/app/helpers"
+	"GORM-practice-backend/app/models"
+	"GORM-practice-backend/app/modules/auth"
 	"github.com/gorilla/mux"
 )
 
@@ -71,7 +71,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteKeyHandler delete key
-func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) { // check here, success message every time even after the key is deleted
+func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
 		Status:  "Success",

@@ -15,7 +15,7 @@ import (
 )
 
 // CreateTribeHandler to handle createtribe
-func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) { // cek apakah tribe lead exist (later)
 	// Get User ID
 	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
@@ -188,7 +188,13 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var tribe models.Tribe
-	h.DB.First(&tribe, uint(tribeUint))
+	if row := h.DB.First(&tribe, uint(tribeUint)); row.RowsAffected == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"tribe does not exist",
+		}`), http.StatusInternalServerError)
+		return
+	}
 
 	// Get User ID
 	uid, role, err := auth.ExtractTokenUID(r)
@@ -199,10 +205,11 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 		}`), http.StatusInternalServerError)
 		return
 	}
+
 	if role < 1 && uint64(tribe.LeadID) != uid {
 		helpers.RenderJSON(w, []byte(`
 		{
-			"message":"Request denied, tribe or super admin only",
+			"message":"Request denied, tribe lead or super admin only",
 		}`), http.StatusForbidden)
 		return
 	}
@@ -275,7 +282,13 @@ func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.DB.Where("user_id = ? AND tribe_id = ?", assign.UID, tribeUint).Delete(models.TribeAssign{})
+	if row := h.DB.Where("user_id = ? AND tribe_id = ?", assign.UID, tribeUint).Delete(models.TribeAssign{}); row.RowsAffected == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"User does not exist in this tribe",
+		}`), http.StatusForbidden)
+		return
+	}
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	return
