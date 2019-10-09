@@ -7,7 +7,22 @@
   },
   "test_key_edit": {
    "defaultValue": {
-    "value": "false"
+    "value": "hahaha"
+   }
+  },
+  "test key 1 by user 1": {
+   "defaultValue": {
+    "value": "true"
+   }
+  },
+  "test key 1 by user 2": {
+   "defaultValue": {
+    "value": "true"
+   }
+  },
+  "test key 3 by user 2": {
+   "defaultValue": {
+    "value": "true"
    }
   }
  }

@@ -12,11 +12,12 @@ import (
 	"golang.org/x/oauth2/jwt"
 )
 
+// GetEtag return etag string and error
 func (h *Handler) GetEtag() (string, error) {
 	//Set up new Client HTTP
 	client := &http.Client{}
 
-	req, err := http.NewRequest(http.MethodGet, h.RemoteConfigUrl, nil)
+	req, err := http.NewRequest(http.MethodGet, h.RemoteConfigURL, nil)
 	if err != nil {
 		return "", err
 	}
@@ -34,6 +35,7 @@ func (h *Handler) GetEtag() (string, error) {
 	return "", nil
 }
 
+// GetToken return error
 func (h *Handler) GetToken() error {
 	b, err := ioutil.ReadFile(h.CredentialsFile)
 	if err != nil {
@@ -60,13 +62,14 @@ func (h *Handler) GetToken() error {
 	return nil
 }
 
+// Init to init remote config
 func (h *Handler) Init() error {
 	h.CredentialsFile = os.Getenv("credentialsFile")
 	h.ConfigFile = os.Getenv("configFile")
 	h.ProjectID = os.Getenv("PROJECT_ID")
-	BASE_URL := "https://firebaseremoteconfig.googleapis.com"
-	REMOTE_CONFIG_ENDPOINT := "v1/projects/" + h.ProjectID + "/remoteConfig"
-	h.RemoteConfigUrl = BASE_URL + "/" + REMOTE_CONFIG_ENDPOINT
+	baseURL := "https://firebaseremoteconfig.googleapis.com"
+	remoteConfigEndpoint := "v1/projects/" + h.ProjectID + "/remoteConfig"
+	h.RemoteConfigURL = baseURL + "/" + remoteConfigEndpoint
 
 	err := h.GetToken()
 	if err != nil {

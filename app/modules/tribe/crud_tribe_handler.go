@@ -1,19 +1,38 @@
 package tribe
 
 import (
+	"GORM-practice-backend/app/modules/auth"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
-	"github.com/GORM-practice/app/helpers"
-	"github.com/GORM-practice/app/models"
+	"GORM-practice-backend/app/helpers"
+	"GORM-practice-backend/app/models"
+
 	"github.com/gorilla/mux"
 )
 
 // CreateTribeHandler to handle createtribe
-func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) { // cek apakah tribe lead exist (later)
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Request denied, super admin only",
+		}`), http.StatusForbidden)
+		return
+	}
+
 	status := http.StatusOK
 	message := JSONMessage{
 		Status:  "Success",
@@ -27,6 +46,7 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when creating tribe"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	tribe := models.Tribe{}
@@ -36,6 +56,7 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when creating tribe"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	if err = h.CreateTribe(tribe); err != nil {
@@ -44,6 +65,7 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when creating tribe"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	return
@@ -51,6 +73,23 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 
 //DeleteTribeHandler handle tribe deletion
 func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Request denied, super admin only",
+		}`), http.StatusForbidden)
+		return
+	}
+
 	status := http.StatusOK
 	message := JSONMessage{
 		Status:  "Success",
@@ -84,12 +123,30 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetTribeByID get tribe by id
 func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Request denied, super admin only",
+		}`), http.StatusForbidden)
+		return
+	}
+
 	params := mux.Vars(r)
 	var tribe models.Tribe
 	h.DB.Preload("Members").Preload("Keys").First(&tribe, params["tribe_id"])
 	json.NewEncoder(w).Encode(&tribe)
 }
 
+// AssignUser assign user in tribe by lead
 func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -116,6 +173,7 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when creating tribe"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	var assign Assign
@@ -126,16 +184,43 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when creating tribe"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	var tribe models.Tribe
-	h.DB.First(&tribe, uint(tribeUint))
+	if row := h.DB.First(&tribe, uint(tribeUint)); row.RowsAffected == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"tribe does not exist",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	// Get User ID
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	if role < 1 && uint64(tribe.LeadID) != uid {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Request denied, tribe lead or super admin only",
+		}`), http.StatusForbidden)
+		return
+	}
+
 	h.DB.Model(&tribe).Association("Members").Append(models.TribeAssign{UserID: assign.UID, TribeID: uint(tribeUint)})
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	return
 }
 
+// RemoveAssign remove user from tribe by lead
 func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -162,6 +247,7 @@ func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when trying to remove user"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	var assign Assign
@@ -172,9 +258,37 @@ func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when trying to remove user"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
-	h.DB.Where("user_id = ? AND tribe_id = ?", assign.UID, tribeUint).Delete(models.TribeAssign{})
+	// Get User ID
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	var tribe models.Tribe
+	h.DB.First(&tribe, uint(tribeUint))
+
+	if role < 1 && uid != uint64(tribe.LeadID) {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Request denied, tribe lead or super admin only",
+		}`), http.StatusForbidden)
+		return
+	}
+
+	if row := h.DB.Where("user_id = ? AND tribe_id = ?", assign.UID, tribeUint).Delete(models.TribeAssign{}); row.RowsAffected == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"User does not exist in this tribe",
+		}`), http.StatusForbidden)
+		return
+	}
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	return

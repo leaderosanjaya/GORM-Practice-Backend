@@ -12,6 +12,8 @@ import (
 // FUNCTION PUBLISH
 // Accepts oauth2 token object & LATEST Etag string
 // Doesnt return anything.... should it tho?
+
+// PushData push data, return error
 func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 	//Attempt to read config file data
 	data, err := ioutil.ReadFile(h.ConfigFile)
@@ -23,7 +25,7 @@ func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 	//Set up new Client HTTP
 	client := &http.Client{}
 
-	req, err := http.NewRequest(http.MethodPut, h.RemoteConfigUrl, bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPut, h.RemoteConfigURL, bytes.NewReader(data))
 	if err != nil {
 		return err
 		// log.Fatalf("Error: %v\n", err)
@@ -50,6 +52,7 @@ func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 	return nil
 }
 
+// PublishConfig publish the config, return error
 func (h *Handler) PublishConfig() error {
 	//Generates the config
 	err := h.GenConfig()

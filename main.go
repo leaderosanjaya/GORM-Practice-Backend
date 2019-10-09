@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/GORM-practice/app/models"
-	"github.com/GORM-practice/app/modules/auth"
-	"github.com/GORM-practice/app/modules/key"
-	"github.com/GORM-practice/app/modules/remote-config"
-	"github.com/GORM-practice/app/modules/tribe"
-	"github.com/GORM-practice/app/modules/user"
-	"github.com/GORM-practice/config"
+	"GORM-practice-backend/app/models"
+	"GORM-practice-backend/app/modules/auth"
+	"GORM-practice-backend/app/modules/key"
+	"GORM-practice-backend/app/modules/tribe"
+	"GORM-practice-backend/app/modules/user"
+	remoteconfig "GORM-practice-backend/app/modules/remote-config"
+	"GORM-practice-backend/config"
 
 	gorillaHandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -83,13 +83,13 @@ func main() {
 	// router.HandleFunc("/api/user/{user_id:[0-9]+}/tribes")
 
 	//Create and delete tribe
-	router.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE")
+	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE")
 
 	//Assign user to tribe
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")
 	//Remove user from tribe
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
 	//get tribe by id
 	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
 	//Get tribe keys
