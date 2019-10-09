@@ -1,6 +1,8 @@
 package key
 
-import "GORM-practice-backend/app/models"
+import (
+	"GORM-practice-backend/app/models"
+)
 
 //CreateKey create key
 func (h *Handler) CreateKey(key models.Key) error {
@@ -24,8 +26,8 @@ func (h *Handler) CreateKey(key models.Key) error {
 func (h *Handler) DeleteKey(targetID uint) error {
 	//remove keys from the user
 	//remove keys from the tribe, edit tribe key count
-	if dbc := h.DB.Where("key_id = ?", targetID).Delete(models.Key{}); dbc.Error != nil {
-		return dbc.Error
+	if err := h.DB.Where("key_id = ?", targetID).Delete(models.Key{}).Error; err != nil {
+		return err
 	}
 	return nil
 }

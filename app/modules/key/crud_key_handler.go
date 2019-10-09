@@ -1,7 +1,6 @@
 package key
 
 import (
-	"log"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -20,7 +19,7 @@ import (
 //Get Key By Filter(Name, Type, Platform, App Version, Tribe, Status)
 
 // CreateKeyHandler create key
-func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) { // create key, not unique
+func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
 		Status:  "Success",
@@ -34,6 +33,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 		message.Message = "Error when creating key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	key := models.Key{}
@@ -43,6 +43,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 		message.Message = "Error when creating key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	// Get user ID from token
@@ -52,6 +53,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 		{
 			"message":"error UID extraction",
 		}`), http.StatusInternalServerError)
+		return
 	}
 
 	key.UserID = uint(uid)
@@ -62,9 +64,9 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 		message.Message = "Error when creating key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-	return
 }
 
 // DeleteKeyHandler delete key
@@ -78,7 +80,7 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 	params := mux.Vars(r)
 	targetUint, err := strconv.ParseUint(params["key_id"], 10, 32)
 	if err != nil {
-		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][ParseUint]: %s", err)
+		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][ParseUint]: %s\n", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
 		status = http.StatusBadRequest
@@ -96,16 +98,17 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 		return
 	}
 
-	userID := strconv.FormatUint(uid, 10)
-	if err != nil {
-		log.Println(err)
+	var key models.Key
+	row := h.DB.First(&key, params["key_id"]).RowsAffected
+	if row == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Key does not exist in DB",
+		}`), http.StatusForbidden)
 		return
 	}
 
-	var key models.Key
-	h.DB.Where("user_id = ?", userID).First(&key)
-
-	if key.UserID != uint(uid) && int(role) < 1 {
+	if role < 1 && uint64(key.UserID) != uid {
 		helpers.RenderJSON(w, []byte(`
 		{
 			"message":"Failed to delete, you are not the owner of this key",
@@ -114,16 +117,15 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 	}
 
 	if err = h.DeleteKey(uint(targetUint)); err != nil {
-		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][DeleteTribe]: %s", err)
+		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][DeleteTribe]: %s\n", err)
 		message.Status = "Failed"
-		message.Message = "Error while deleting"
+		message.Message = err.Error()
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-	return
 }
 
 //GetKeyByID by user
@@ -141,7 +143,14 @@ func (h *Handler) GetKeyByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.DB.Preload("Shares").First(&key, params["key_id"])
+	row := h.DB.Preload("Shares").First(&key, params["key_id"]).RowsAffected
+	if row == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Key does not exist",
+		}`), http.StatusBadRequest)
+		return
+	}
 
 	if key.UserID != uint(uid) && role < 1 {
 		helpers.RenderJSON(w, []byte(`
@@ -191,6 +200,7 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when updating key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	updateKey := models.Key{}
@@ -200,6 +210,7 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when updating key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	updateValue(&updateKey, &key)
@@ -210,7 +221,6 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 		Message: "Updated Key",
 	}
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-	return
 }
 
 // GetKeysByUserID as said
@@ -240,7 +250,7 @@ func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetKeysByTribeID as said
-func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) { // will do After Assign User handler is done
 	params := mux.Vars(r)
 	var keys []models.Key
 
@@ -260,8 +270,9 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 
 	if role < 1 {
 		var ok = false
+		fmt.Println(len(user.Tribes))
 		for _, tribe := range user.Tribes {
-			if tribe.TribeID == uint(paramTribeID) {
+			if uint64(tribe.TribeID) == paramTribeID {
 				ok = true
 				break
 			}
@@ -287,7 +298,7 @@ func (h *Handler) ShareKey(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	keyUint, err := strconv.ParseUint(params["key_id"], 10, 32)
 	if err != nil {
-		fmt.Printf("[crud_key_handler.go][ShareKey][ParseUint]: %s", err)
+		fmt.Printf("[crud_key_handler.go][ShareKey][ParseUint]: %s\n", err)
 		message.Status = "Failed"
 		message.Message = "Error when trying to share key"
 		status = http.StatusBadRequest
@@ -337,12 +348,17 @@ func (h *Handler) ShareKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.DB.Model(&key).Association("Shares").Append(models.KeyShares{UserID: assign.UID, KeyID: uint(keyUint)})
+	if err = h.DB.Model(&key).Association("Shares").Append(models.KeyShares{UserID: assign.UID, KeyID: uint(keyUint)}).Error; err != nil {
+		message.Status = "Failed"
+		message.Message = fmt.Sprintf("Error when trying to share key, check your request again \n %s", err.Error())
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), http.StatusUnauthorized)
+		return
+	}
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-	return
 }
 
+// RevokeShare to delete row in sharing key
 func (h *Handler) RevokeShare(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusOK
 	message := JSONMessage{
@@ -354,7 +370,7 @@ func (h *Handler) RevokeShare(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	keyUint, err := strconv.ParseUint(params["key_id"], 10, 32)
 	if err != nil {
-		fmt.Printf("[crud_key_handler.go][RevokeShare][ParseUint]: %s", err)
+		fmt.Printf("[crud_key_handler.go][RevokeShare][ParseUint]: %s\n", err)
 		message.Status = "Failed"
 		message.Message = "Error when trying to revoke share key"
 		status = http.StatusBadRequest
@@ -369,6 +385,7 @@ func (h *Handler) RevokeShare(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when trying to revoke share key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
 	var assign Assign
@@ -379,10 +396,38 @@ func (h *Handler) RevokeShare(w http.ResponseWriter, r *http.Request) {
 		message.Message = "Error when trying to revoke share key"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
 	}
 
-	h.DB.Where("user_id = ? AND key_id = ?", assign.UID, keyUint).Delete(models.KeyShares{})
+	// Get User ID
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+
+	var key models.Key
+
+	h.DB.First(&key, uint(keyUint))
+
+	if role < 1 && uid != uint64(key.UserID) { // Get user own key
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"you are not authorized to request",
+		}`), http.StatusUnauthorized)
+		return
+	}
+
+	if row := h.DB.Where("user_id = ? AND key_id = ?", assign.UID, keyUint).Delete(models.KeyShares{}).RowsAffected; row == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Key is not shared with anyone, or key does not exist",
+		}`), http.StatusBadRequest)
+		return
+	}
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-	return
 }

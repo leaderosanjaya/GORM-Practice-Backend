@@ -20,7 +20,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		return resp
 	}
 
-	expiresAt := time.Now().Add(time.Minute * 2).Unix()
+	expiresAt := time.Now().Add(time.Minute * 5).Unix()
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {

@@ -103,7 +103,7 @@ func main() {
 	//Assign Key Share
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.ShareKey).Methods("POST")
 	//Remove Key Share
-	router.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
+	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
 
 	//Get keys by filter
 	// router.HandleFunc("/api/keys/").Methods("GET")
