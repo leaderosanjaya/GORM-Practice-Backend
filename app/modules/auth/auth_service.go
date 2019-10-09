@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"GORM-practice-backend/app/models"
-
+	"github.com/GORM-practice/app/models"
+  
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )

@@ -6,13 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"GORM-practice-backend/app/models"
-	"GORM-practice-backend/app/modules/auth"
-	"GORM-practice-backend/app/modules/key"
-	"GORM-practice-backend/app/modules/tribe"
-	"GORM-practice-backend/app/modules/user"
-	"GORM-practice-backend/config"
-
+	"github.com/GORM-practice/app/models"
+	"github.com/GORM-practice/app/modules/auth"
+	"github.com/GORM-practice/app/modules/key"
+	"github.com/GORM-practice/app/modules/tribe"
+	"github.com/GORM-practice/app/modules/user"
+	"github.com/GORM-practice/config"
 	gorillaHandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -84,6 +83,8 @@ func main() {
 
 	//Assign user to tribe
 	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")
+	//Remove user from tribe
+	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
 	//get tribe by id
 	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
 	//Get tribe keys
@@ -100,6 +101,9 @@ func main() {
 
 	//Assign Key Share
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.ShareKey).Methods("POST")
+	//Remove Key Share
+	router.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
+  
 	//Get keys by filter
 	// router.HandleFunc("/api/keys/").Methods("GET")
 

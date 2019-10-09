@@ -6,9 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-
-	"GORM-practice-backend/app/helpers"
-	"GORM-practice-backend/app/models"
+  
+	"github.com/GORM-practice/app/helpers"
+	"github.com/GORM-practice/app/models"
+  
 	"github.com/gorilla/mux"
 )
 
@@ -131,6 +132,50 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 	var tribe models.Tribe
 	h.DB.First(&tribe, uint(tribeUint))
 	h.DB.Model(&tribe).Association("Members").Append(models.TribeAssign{UserID: assign.UID, TribeID: uint(tribeUint)})
+
+	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	return
+}
+
+func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
+	status := http.StatusOK
+	message := JSONMessage{
+		Status:  "Success",
+		Message: "Removed user from Tribe successfully",
+	}
+
+	//get tribe uint64
+	params := mux.Vars(r)
+	tribeUint, err := strconv.ParseUint(params["tribe_id"], 10, 32)
+	if err != nil {
+		fmt.Printf("[crud_tribe_handler.go][RemoveAssign][ParseUint]: %s", err)
+		message.Status = "Failed"
+		message.Message = "Error when trying to remove user"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("[crud_tribe_handler.go][RemoveAssign][ReadBody]: %s\n", err)
+		message.Status = "Failed"
+		message.Message = "Error when trying to remove user"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	}
+
+	var assign Assign
+	//read body, get user id
+	if err = json.Unmarshal(body, &assign); err != nil {
+		fmt.Printf("[crud_tribe_handler.go][RemoveAssign][UnmarshalJSON]: %s\n", err)
+		message.Status = "Failed"
+		message.Message = "Error when trying to remove user"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	}
+
+	h.DB.Where("user_id = ? AND tribe_id = ?", assign.UID, tribeUint).Delete(models.TribeAssign{})
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 	return

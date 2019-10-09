@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"GORM-practice-backend/app/helpers"
-	"GORM-practice-backend/app/models"
+	"github.com/GORM-practice/app/helpers"
+	"github.com/GORM-practice/app/models"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/joho/godotenv"
