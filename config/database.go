@@ -30,6 +30,6 @@ func ConnectDB() (*gorm.DB, error) {
 		fmt.Printf("[DB ConnectDB] %s", err)
 		return nil, err
 	}
-	fmt.Printf("Established connection successfully to DB %s", dbname)
+	fmt.Printf("Established connection successfully to DB %s\n", dbname)
 	return db, nil
 }
