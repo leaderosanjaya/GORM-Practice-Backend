@@ -34,12 +34,14 @@ func main() {
 	tribeHandler := new(tribe.Handler)
 	keyHandler := new(key.Handler)
 	authHandler := new(auth.Handler)
-
+	remoteConfigHandler := new(remoteconfig.Handler)
+	remoteConfigHandler.Init()
 	//Pass DB to handler
 	userHandler.DB = db
 	tribeHandler.DB = db
 	keyHandler.DB = db
 	authHandler.DB = db
+	remoteConfigHandler.DB = db
 
 	//Update schema to models.go
 	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{})
@@ -114,7 +116,11 @@ func main() {
 	//Delete Key by Name
 
 	//Update Key by Name, given new value
+	err = remoteConfigHandler.PublishConfig()
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	fmt.Printf("[%s] Listening on Port 8080", time.Now())
+	fmt.Printf("[%s] Listening on Port 8080\n", time.Now())
 	log.Fatal(http.ListenAndServe(":8080", gorillaHandler.CORS(headers, methods, origins)(router)))
 }
