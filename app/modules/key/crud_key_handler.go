@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"GORM-practice-backend/app/helpers"
-	"GORM-practice-backend/app/models"
-	"GORM-practice-backend/app/modules/auth"
-
+	"github.com/GORM-practice/app/helpers"
+	"github.com/GORM-practice/app/models"
+	"github.com/GORM-practice/app/modules/auth"
 	"github.com/gorilla/mux"
 )
 
@@ -66,6 +65,8 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
+
+	h.PushRemoteConfig()
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 }
 
@@ -124,6 +125,8 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) { // 
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 		return
 	}
+
+	h.PushRemoteConfig()
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 }
@@ -216,6 +219,7 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	updateValue(&updateKey, &key)
 	h.DB.Save(&key)
 
+	h.PushRemoteConfig()
 	message = JSONMessage{
 		Status:  "Success",
 		Message: "Updated Key",

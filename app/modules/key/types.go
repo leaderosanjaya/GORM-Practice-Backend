@@ -4,7 +4,8 @@ import "github.com/jinzhu/gorm"
 
 // Handler handler struct
 type Handler struct {
-	DB *gorm.DB
+	DB               *gorm.DB
+	PushRemoteConfig (func() error)
 }
 
 // Del struct, was KeyDel

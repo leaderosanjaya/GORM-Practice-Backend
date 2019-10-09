@@ -43,6 +43,7 @@ func main() {
 	keyHandler.DB = db
 	authHandler.DB = db
 	remoteConfigHandler.DB = db
+	keyHandler.PushRemoteConfig = remoteConfigHandler.PublishConfig
 
 	//Update schema to models.go
 	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{})
@@ -117,10 +118,11 @@ func main() {
 	//Delete Key by Name
 
 	//Update Key by Name, given new value
-	err = remoteConfigHandler.PublishConfig()
-	if err != nil {
-		fmt.Println(err)
-	}
+	//change it to execute from createkey
+	// err = remoteConfigHandler.PublishConfig()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
 	fmt.Printf("[%s] Listening on Port 8080\n", time.Now())
 	log.Fatal(http.ListenAndServe(":8080", gorillaHandler.CORS(headers, methods, origins)(router)))
