@@ -54,6 +54,8 @@ func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.Role = 0
+
 	if err = h.InsertUser(user); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
 		message.Status = "Failed"
