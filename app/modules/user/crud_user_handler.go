@@ -68,7 +68,7 @@ func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.Role = 0
 	user.Password = cred.Password
-	
+
 	user = models.User(user)
 	if err = h.InsertUser(user); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
@@ -138,5 +138,6 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var user models.User
 	h.DB.Preload("Keys").Preload("Tribes").Preload("SharedKeys").First(&user, params["user_id"])
-	json.NewEncoder(w).Encode(&user)
+	write, _ := json.Marshal(&user)
+	helpers.RenderJSON(w, write, http.StatusOK)
 }
