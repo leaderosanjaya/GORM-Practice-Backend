@@ -91,12 +91,13 @@ func main() {
 	//Remove user from tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
 	//get tribe by id
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
 	//Get tribe keys
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/keys").Methods("GET")
 	//Get tribe users
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/users").Methods("GET")
 	//Create and delete Key
+	s.HandleFunc("/api/keys", keyHandler.GetKeysHandler).Methods("GET")
 	s.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE")
 	//Get key by ID
