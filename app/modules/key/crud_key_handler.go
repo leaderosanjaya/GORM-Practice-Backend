@@ -70,8 +70,8 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.PushRemoteConfig()
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	h.PushRemoteConfig()
 }
 
 // DeleteKeyHandler delete key
@@ -130,9 +130,8 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.PushRemoteConfig()
-
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	h.PushRemoteConfig()
 }
 
 //GetKeyByID by user
@@ -223,12 +222,12 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	updateValue(&updateKey, &key)
 	h.DB.Save(&key)
 
-	h.PushRemoteConfig()
 	message = JSONMessage{
 		Status:  "Success",
 		Message: "Updated Key",
 	}
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	h.PushRemoteConfig()
 }
 
 // GetKeysByUserID as said
