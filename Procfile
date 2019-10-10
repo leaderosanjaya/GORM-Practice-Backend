@@ -1,1 +1,0 @@
-web: bin/remote-config-gorm
