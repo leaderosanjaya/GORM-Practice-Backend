@@ -1,3 +1,4 @@
 .env
 Procfile
 service-account.json
+config.json
