@@ -3,27 +3,26 @@
   "test_key_3": {
    "defaultValue": {
     "value": "true"
-   }
+   },
+   "description": "a simple test"
+  },
+  "test_key_4": {
+   "defaultValue": {
+    "value": "true"
+   },
+   "description": "description testing, i think platform and etc should be inserted as well"
+  },
+  "test_key_5": {
+   "defaultValue": {
+    "value": "true"
+   },
+   "description": "description testing, i think platform and etc should be inserted as well"
   },
   "test_key_edit": {
    "defaultValue": {
-    "value": "hahaha"
-   }
-  },
-  "test key 1 by user 1": {
-   "defaultValue": {
-    "value": "true"
-   }
-  },
-  "test key 1 by user 2": {
-   "defaultValue": {
-    "value": "true"
-   }
-  },
-  "test key 3 by user 2": {
-   "defaultValue": {
-    "value": "true"
-   }
+    "value": "false"
+   },
+   "description": "a simple test"
   }
  }
 }

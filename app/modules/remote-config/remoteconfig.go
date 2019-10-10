@@ -3,7 +3,6 @@ package remoteconfig
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -37,15 +36,15 @@ func (h *Handler) GetEtag() (string, error) {
 
 // GetToken return error
 func (h *Handler) GetToken() error {
-	b, err := ioutil.ReadFile(h.CredentialsFile)
-	if err != nil {
-		return err
-	}
+	// b, err := ioutil.ReadFile(h.CredentialsFile)
+	// if err != nil {
+	// 	return err
+	// }
 	var c = struct {
 		Email      string `json:"client_email"`
 		PrivateKey string `json:"private_key"`
 	}{}
-	json.Unmarshal(b, &c)
+	json.Unmarshal([]byte(h.CredentialsFile), &c)
 	config := &jwt.Config{
 		Email:      c.Email,
 		PrivateKey: []byte(c.PrivateKey),
@@ -64,7 +63,7 @@ func (h *Handler) GetToken() error {
 
 // Init to init remote config
 func (h *Handler) Init() error {
-	h.CredentialsFile = os.Getenv("credentialsFile")
+	h.CredentialsFile = os.Getenv("GOOGLE_CREDENTIALS")
 	h.ConfigFile = os.Getenv("configFile")
 	h.ProjectID = os.Getenv("PROJECT_ID")
 	baseURL := "https://firebaseremoteconfig.googleapis.com"

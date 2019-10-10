@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/GORM-practice/app/models"
@@ -122,7 +123,10 @@ func main() {
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
-
+	port := os.Getenv("PORT") //Get port from .env file, we did not specify any port so this should return an empty string when tested locally
+	if port == "" {
+		port = "8080" //localhost
+	}
 	fmt.Printf("[%s] Listening on Port 8080\n", time.Now())
-	log.Fatal(http.ListenAndServe(":8080", gorillaHandler.CORS(headers, methods, origins)(router)))
+	log.Fatal(http.ListenAndServe(":"+port, gorillaHandler.CORS(headers, methods, origins)(router)))
 }
