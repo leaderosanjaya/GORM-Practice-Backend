@@ -135,3 +135,38 @@ func ExtractTokenUID(r *http.Request) (uint64, int64, error) {
 	}
 	return 0, 0, err
 }
+
+// ValidateToken to validate token request
+func ValidateToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	tokenString := r.Header.Get("Authorization")
+	splitToken := strings.Split(tokenString, " ")
+	tokenString = splitToken[1]
+
+	// Initialize a new instance of `Claims`
+	claims := Token{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("API_SECRET_KEY")), nil
+	})
+
+	if err != nil {
+		jsonMessage := []byte(`{"status":"401", "message": "Invalid Token Format"}`)
+		helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
+		return
+	}
+	if err == jwt.ErrSignatureInvalid {
+		jsonMessage := []byte(`{"status":"401", "message": "Token Signature Invalid"}`)
+		helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
+		return
+	}
+
+	if !token.Valid {
+		fmt.Println("2")
+		jsonMessage := []byte(`{"status":"401", "message": "Invalid Token, this request has no authorization"}`)
+		helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
+		return
+	}
+
+	jsonMessage := []byte(`{"status":"200", "condition":"true", "message": "Token is Valid"}`)
+	helpers.RenderJSON(w, jsonMessage, http.StatusOK)
+}
