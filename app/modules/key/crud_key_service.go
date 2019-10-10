@@ -1,7 +1,7 @@
 package key
 
 import (
-	"GORM-practice-backend/app/models"
+	"github.com/GORM-practice/app/models"
 )
 
 //CreateKey create key
