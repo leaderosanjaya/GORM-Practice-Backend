@@ -56,7 +56,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key.UserID = uint(uid)
-	
+
 	var user models.TribeAssign
 	h.DB.Where("user_id = ?", uint(uid)).First(&user)
 	key.TribeID = user.TribeID
@@ -70,7 +70,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// h.PushRemoteConfig()
+	h.PushRemoteConfig()
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 }
 
@@ -258,7 +258,7 @@ func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetKeysByTribeID as said
-func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) { 
+func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var keys []models.Key
 
@@ -270,7 +270,6 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 		}`), http.StatusInternalServerError)
 		return
 	}
-
 
 	paramTribeID, _ := strconv.ParseUint(fmt.Sprintf("%s", params["tribe_id"]), 10, 32)
 
@@ -290,7 +289,7 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 			}`), http.StatusForbidden)
 			return
 		}
-		
+
 		var ok = false
 		for _, tribe := range userTribes {
 			if uint64(tribe.TribeID) == paramTribeID {
