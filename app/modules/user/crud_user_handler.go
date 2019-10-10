@@ -10,6 +10,7 @@ import (
 	"GORM-practice-backend/app/helpers"
 	"GORM-practice-backend/app/models"
 	"GORM-practice-backend/app/modules/auth"
+
 	"github.com/gorilla/mux"
 )
 
@@ -106,7 +107,7 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = h.DeleteUser(uint(targetUint)) ; err != nil {
+	if err = h.DeleteUser(uint(targetUint)); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
 		message.Status = "Failed"
 		message.Message = "Error while deleting"
