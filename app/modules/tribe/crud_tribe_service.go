@@ -2,7 +2,8 @@ package tribe
 
 import (
 	"errors"
-	"GORM-practice-backend/app/models"
+
+	"github.com/GORM-practice/app/models"
 )
 
 // CreateTribe create tribe
