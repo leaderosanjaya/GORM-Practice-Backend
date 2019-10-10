@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"GORM-practice-backend/app/models"
+	"github.com/GORM-practice/app/models"
 )
 
 //Get all keys
