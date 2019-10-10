@@ -16,7 +16,7 @@ func ConnectDB() (*gorm.DB, error) {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Printf("[DB Load Env] %s\n", err)
-		return nil, err
+		fmt.Printf("Attempting to load online environment...\n")
 	}
 
 	host := os.Getenv("PG_HOST")
