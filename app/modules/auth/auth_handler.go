@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"GORM-practice-backend/app/helpers"
-	"GORM-practice-backend/app/models"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/joho/godotenv"
 )
@@ -77,14 +77,21 @@ func JwtVerify(next http.Handler) http.Handler {
 
 // Login user login
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	user := &models.User{}
-	err := json.NewDecoder(r.Body).Decode(user)
+	cred := Credential{}
+	err := json.NewDecoder(r.Body).Decode(&cred)
 	if err != nil {
 		resp := map[string]interface{}{"status": false, "message": "Invalid request"}
 		json.NewEncoder(w).Encode(resp)
+		return
 	}
 
-	resp := h.FindOne(user.Email, user.Password)
+	if lenPass := len(cred.Password); lenPass < 6 {
+		resp := map[string]interface{}{"status": false, "message": "Invalid password"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	
+	resp := h.FindOne(cred.Email, cred.Password)
 	json.NewEncoder(w).Encode(resp)
 }
 

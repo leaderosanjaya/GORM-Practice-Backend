@@ -1,11 +1,6 @@
 {
  "parameters": {
-  "test_key_3": {
-   "defaultValue": {
-    "value": "true"
-   }
-  },
-  "test_key_edit": {
+  "huhuhu": {
    "defaultValue": {
     "value": "hahaha"
    }
@@ -21,6 +16,16 @@
    }
   },
   "test key 3 by user 2": {
+   "defaultValue": {
+    "value": "true"
+   }
+  },
+  "test key 7 by user 2": {
+   "defaultValue": {
+    "value": "true"
+   }
+  },
+  "test key 8 by user 2": {
    "defaultValue": {
     "value": "true"
    }

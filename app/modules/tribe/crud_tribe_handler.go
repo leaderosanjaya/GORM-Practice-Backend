@@ -15,7 +15,7 @@ import (
 )
 
 // CreateTribeHandler to handle createtribe
-func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) { // cek apakah tribe lead exist (later)
+func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
 	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
@@ -56,6 +56,15 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) { /
 		message.Message = "Error when creating tribe"
 		status = http.StatusBadRequest
 		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
+	}
+
+	var lead models.User
+	if row := h.DB.Where("user_id = ?", tribe.LeadID).First(&lead); row.RowsAffected == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Lead does not exist",
+		}`), http.StatusBadRequest)
 		return
 	}
 
@@ -187,12 +196,21 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var user models.User
+	if row := h.DB.First(&user, assign.UID); row.RowsAffected == 0 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"user does not exist",
+		}`), http.StatusBadRequest)
+		return
+	}
+
 	var tribe models.Tribe
 	if row := h.DB.First(&tribe, uint(tribeUint)); row.RowsAffected == 0 {
 		helpers.RenderJSON(w, []byte(`
 		{
 			"message":"tribe does not exist",
-		}`), http.StatusInternalServerError)
+		}`), http.StatusBadRequest)
 		return
 	}
 
