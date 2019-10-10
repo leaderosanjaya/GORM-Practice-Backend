@@ -1,3 +1,5 @@
 .env
 Procfile
 service-account.json
+Godeps
+vendor

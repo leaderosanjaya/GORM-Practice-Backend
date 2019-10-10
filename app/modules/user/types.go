@@ -1,6 +1,8 @@
 package user
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 // Handler for user handler db
 type Handler struct {

@@ -3,7 +3,7 @@ package user
 import (
 	"errors"
 
-	"github.com/GORM-practice/app/models"
+	"GORM-practice-backend/app/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

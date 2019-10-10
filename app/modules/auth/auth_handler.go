@@ -11,7 +11,6 @@ import (
 	"strings"
   
 	"GORM-practice-backend/app/helpers"
-	"GORM-practice-backend/app/models"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/joho/godotenv"
