@@ -161,7 +161,6 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !token.Valid {
-		fmt.Println("2")
 		jsonMessage := []byte(`{"status":"401", "message": "Invalid Token, this request has no authorization"}`)
 		helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
 		return
