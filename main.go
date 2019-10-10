@@ -67,6 +67,9 @@ func main() {
 	//Login user
 	router.HandleFunc("/api/login", authHandler.Login).Methods("POST")
 
+	//Validate token user has
+	s.HandleFunc("/api/user/valid", authHandler.ValidateToken).Methods("GET")
+
 	//Create and delete user
 	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST")
 	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
@@ -91,7 +94,7 @@ func main() {
 	//Remove user from tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
 	//get tribe by id
-	router.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
 	//Get tribe keys
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/keys").Methods("GET")
 	//Get tribe users
