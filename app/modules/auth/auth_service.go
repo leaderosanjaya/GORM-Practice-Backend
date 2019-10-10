@@ -1,7 +1,7 @@
 package auth
 
 import (
-	// "fmt"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -21,9 +21,9 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		resp := map[string]interface{}{"status": false, "message": "email not found"}
 		return resp
 	}
-
-	res := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if res != nil {
+	
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		fmt.Println(err)
 		resp := map[string]interface{}{"status": false, "message": "credential false"}
 		return resp
 	}
@@ -48,7 +48,6 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		log.Println(err)
 	}
 
-	user.Password = ""
 	resp := map[string]interface{}{"status": true, "message": "logged in"}
 	resp["token"] = tokenString
 	resp["user"] = user

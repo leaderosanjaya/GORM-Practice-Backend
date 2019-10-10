@@ -9,7 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-  
+
 	"GORM-practice-backend/app/helpers"
 
 	"github.com/dgrijalva/jwt-go"
@@ -90,7 +90,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-	
+
 	resp := h.FindOne(cred.Email, cred.Password)
 	json.NewEncoder(w).Encode(resp)
 }

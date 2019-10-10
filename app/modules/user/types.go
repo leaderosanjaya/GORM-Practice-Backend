@@ -20,3 +20,8 @@ type JSONMessage struct {
 	ErrorCode string `json:"errorCode"`
 	Message   string `json:"message"`
 }
+
+// Credential structure
+type Credential struct {
+	Password string `json:"password"`
+}
