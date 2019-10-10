@@ -23,6 +23,7 @@ type DefaultValue struct {
 // Parameter default value defaultValue
 type Parameter struct {
 	DefaultValue DefaultValue `json:"defaultValue"`
+	Description  string       `json:"description"`
 }
 
 // Config parameters
