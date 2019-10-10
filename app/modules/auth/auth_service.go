@@ -1,31 +1,35 @@
 package auth
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/GORM-practice/app/models"
+
 	"github.com/dgrijalva/jwt-go"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
 // FindOne verify user email and password
 func (h *Handler) FindOne(email, password string) map[string]interface{} {
-	user := &models.User{}
+	user := models.User{}
 
-	if err := h.DB.Debug().Where("email= ?", email).First(user).Error; err != nil {
+	if err := h.DB.Debug().Where("email= ?", email).First(&user).Error; err != nil {
 		resp := map[string]interface{}{"status": false, "message": "email not found"}
 		return resp
 	}
-
-	expiresAt := time.Now().Add(time.Minute * 5).Unix()
-
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
+	
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		fmt.Println(err)
 		resp := map[string]interface{}{"status": false, "message": "credential false"}
 		return resp
 	}
+
+	// JWT
+	expiresAt := time.Now().Add(time.Minute * 5).Unix()
 
 	tk := &Token{
 		UserID: user.ID,
@@ -44,7 +48,6 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		log.Println(err)
 	}
 
-	user.Password = ""
 	resp := map[string]interface{}{"status": true, "message": "logged in"}
 	resp["token"] = tokenString
 	resp["user"] = user

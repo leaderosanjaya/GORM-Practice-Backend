@@ -10,6 +10,7 @@ import (
 	"github.com/GORM-practice/app/helpers"
 	"github.com/GORM-practice/app/models"
 	"github.com/GORM-practice/app/modules/auth"
+
 	"github.com/gorilla/mux"
 )
 
@@ -54,6 +55,21 @@ func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cred := Credential{}
+	err = json.Unmarshal(body, &cred)
+	if err != nil {
+		fmt.Printf("[CRUD User Unmarshal JSON][Cred]: %s", err)
+		message.Status = "Failed"
+		message.Message = "Error while registering"
+		status = http.StatusBadRequest
+		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		return
+	}
+
+	user.Role = 0
+	user.Password = cred.Password
+	
+	user = models.User(user)
 	if err = h.InsertUser(user); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
 		message.Status = "Failed"

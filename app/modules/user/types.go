@@ -1,6 +1,8 @@
 package user
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 // Handler for user handler db
 type Handler struct {
@@ -17,4 +19,9 @@ type JSONMessage struct {
 	Status    string `json:"status"`
 	ErrorCode string `json:"errorCode"`
 	Message   string `json:"message"`
+}
+
+// Credential structure
+type Credential struct {
+	Password string `json:"password"`
 }

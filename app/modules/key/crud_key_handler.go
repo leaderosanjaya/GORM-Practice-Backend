@@ -56,6 +56,10 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key.UserID = uint(uid)
+	
+	var user models.TribeAssign
+	h.DB.Where("user_id = ?", uint(uid)).First(&user)
+	key.TribeID = user.TribeID
 
 	if err = h.CreateKey(key); err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][InsertTribe]: %s\n", err)
@@ -66,7 +70,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.PushRemoteConfig()
+	// h.PushRemoteConfig()
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 }
 
@@ -254,7 +258,7 @@ func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetKeysByTribeID as said
-func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) { // will do After Assign User handler is done
+func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) { 
 	params := mux.Vars(r)
 	var keys []models.Key
 
@@ -267,15 +271,28 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) { // 
 		return
 	}
 
-	var user models.User
-	h.DB.First(&user, uint(uid))
 
 	paramTribeID, _ := strconv.ParseUint(fmt.Sprintf("%s", params["tribe_id"]), 10, 32)
 
 	if role < 1 {
+		var userTribes []models.TribeAssign
+		if row := h.DB.Where("user_id = ?", uint(uid)).Find(&userTribes); row.RowsAffected == 0 {
+			helpers.RenderJSON(w, []byte(`
+			{
+				"message":"user does not exist",
+			}`), http.StatusBadRequest)
+			return
+		}
+		if len(userTribes) == 0 {
+			helpers.RenderJSON(w, []byte(`
+			{
+				"message":"user is not from this tribe, request denied",
+			}`), http.StatusForbidden)
+			return
+		}
+		
 		var ok = false
-		fmt.Println(len(user.Tribes))
-		for _, tribe := range user.Tribes {
+		for _, tribe := range userTribes {
 			if uint64(tribe.TribeID) == paramTribeID {
 				ok = true
 				break

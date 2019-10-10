@@ -1,6 +1,8 @@
 package key
 
-import "github.com/GORM-practice/app/models"
+import (
+	"github.com/GORM-practice/app/models"
+)
 
 //CreateKey create key
 func (h *Handler) CreateKey(key models.Key) error {

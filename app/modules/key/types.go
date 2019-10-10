@@ -1,6 +1,8 @@
 package key
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 // Handler handler struct
 type Handler struct {
