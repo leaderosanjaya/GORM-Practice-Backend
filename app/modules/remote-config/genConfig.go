@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"GORM-practice-backend/app/models"
+	"github.com/GORM-practice/app/models"
 )
 
 //Get all keys
@@ -26,7 +26,7 @@ func (h *Handler) ParseConfig(keys []models.Key) (Config, error) {
 	var config Config
 	config.Parameters = map[string]Parameter{}
 	for _, key := range keys {
-		p := Parameter{DefaultValue: DefaultValue{Value: key.KeyValue}}
+		p := Parameter{DefaultValue: DefaultValue{Value: key.KeyValue}, Description: key.Description}
 		config.Parameters[key.KeyName] = p
 	}
 	return config, nil

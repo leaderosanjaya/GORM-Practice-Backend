@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
-	"GORM-practice-backend/app/models"
-	"GORM-practice-backend/app/modules/auth"
-	"GORM-practice-backend/app/modules/key"
-	"GORM-practice-backend/app/modules/tribe"
-	"GORM-practice-backend/app/modules/user"
-	remoteconfig "GORM-practice-backend/app/modules/remote-config"
-	"GORM-practice-backend/config"
-
+	"github.com/GORM-practice/app/models"
+	"github.com/GORM-practice/app/modules/auth"
+	"github.com/GORM-practice/app/modules/key"
+	"github.com/GORM-practice/app/modules/remote-config"
+	"github.com/GORM-practice/app/modules/tribe"
+	"github.com/GORM-practice/app/modules/user"
+	"github.com/GORM-practice/config"
 	gorillaHandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -123,7 +123,10 @@ func main() {
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
-
+	port := os.Getenv("PORT") //Get port from .env file, we did not specify any port so this should return an empty string when tested locally
+	if port == "" {
+		port = "8080" //localhost
+	}
 	fmt.Printf("[%s] Listening on Port 8080\n", time.Now())
-	log.Fatal(http.ListenAndServe(":8080", gorillaHandler.CORS(headers, methods, origins)(router)))
+	log.Fatal(http.ListenAndServe(":"+port, gorillaHandler.CORS(headers, methods, origins)(router)))
 }
