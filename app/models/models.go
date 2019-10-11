@@ -22,9 +22,9 @@ type Tribe struct {
 	ID          uint          `json:"tribe_id" gorm:"primary_key;column:tribe_id"`
 	CreatedAt   time.Time     `json:"-"`
 	UpdatedAt   time.Time     `json:"-"`
-	TribeName   string        `json:"tribe_name" gorm:"type:varchar(50);not null;unique"`
+	TribeName   string        `json:"tribe_name" gorm:"type:varchar(255);not null;unique"`
 	LeadID      uint          `json:"lead_id"` //use lead_id as foreign key
-	Description string        `json:"description" gorm:"type:varchar(200)"`
+	Description string        `json:"description" gorm:"type:text"`
 	TotalMember int           `json:"total_member" gorm:"not null;default:1"`
 	TotalKey    int           `json:"total_key" gorm:"not null;default:0"`
 	Keys        []Key         `json:"keys" gorm:"foreignkey:TribeID"`
@@ -36,10 +36,10 @@ type Key struct {
 	ID          uint        `json:"key_id" gorm:"primary_key;column:key_id"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
-	KeyName     string      `json:"key_name" gorm:"type:varchar(50);not null;unique"`
-	KeyValue    string      `json:"key_value" gorm:"type:varchar(300);not null"`
-	KeyType     string      `json:"key_type" gorm:"type:varchar(15);not null;default:'STRING'"`
-	Description string      `json:"description" gorm:"type:varchar(200);not null"`
+	KeyName     string      `json:"key_name" gorm:"type:varchar(255);not null;unique"`
+	KeyValue    string      `json:"key_value" gorm:"type:text;not null"`
+	KeyType     string      `json:"key_type" gorm:"type:varchar(20);not null;default:'STRING'"`
+	Description string      `json:"description" gorm:"type:text;not null"`
 	Platform    string      `json:"platform" gorm:"type:varchar(50);not null"`
 	ExpireDate  time.Time   `json:"expire_date" gorm:"not null"`
 	UserID      uint        `json:"user_id" gorm:"not null"`
