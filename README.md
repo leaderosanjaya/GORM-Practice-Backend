@@ -1,7 +1,7 @@
-#GORM REST API Remote Config Practice
+# GORM REST API Remote Config Practice
 A simple project made to demonstrate REST api calls using GORM
 
-#API Routes
+# API Routes
 | Scope | Path                                | Method | Function                        | Description                           |
 |-------|-------------------------------------|--------|---------------------------------|---------------------------------------|
 |       | /api                                | GET    | index                           | Checks if the API is alive or not     |
