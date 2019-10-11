@@ -22,7 +22,7 @@ type Assign struct {
 
 // JSONMessage struct
 type JSONMessage struct {
-	Status    string `json:"status"`
-	ErrorCode string `json:"errorCode"`
-	Message   string `json:"message"`
+	Status    string `json:"status,omitempty"`
+	ErrorCode string `json:"errorCode,omitempty"`
+	Message   string `json:"message,omitempty"`
 }

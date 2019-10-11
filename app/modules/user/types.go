@@ -16,9 +16,9 @@ type Del struct {
 
 // JSONMessage structure to define message
 type JSONMessage struct {
-	Status    string `json:"status"`
-	ErrorCode string `json:"errorCode"`
-	Message   string `json:"message"`
+	Status    string `json:"status,omitempty"`
+	ErrorCode string `json:"errorCode,omitempty"`
+	Message   string `json:"message,omitempty"`
 }
 
 // Credential structure

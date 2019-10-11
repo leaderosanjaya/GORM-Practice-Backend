@@ -56,7 +56,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key.UserID = uint(uid)
-	
+
 	var user models.TribeAssign
 	h.DB.Where("user_id = ?", uint(uid)).First(&user)
 	key.TribeID = user.TribeID
@@ -70,8 +70,8 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// h.PushRemoteConfig()
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	h.PushRemoteConfig()
 }
 
 // DeleteKeyHandler delete key
@@ -130,9 +130,8 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.PushRemoteConfig()
-
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	h.PushRemoteConfig()
 }
 
 //GetKeyByID by user
@@ -167,7 +166,8 @@ func (h *Handler) GetKeyByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&key)
+	write, _ := json.Marshal(&key)
+	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
 //UpdateKeyByID key
@@ -223,12 +223,12 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	updateValue(&updateKey, &key)
 	h.DB.Save(&key)
 
-	h.PushRemoteConfig()
 	message = JSONMessage{
 		Status:  "Success",
 		Message: "Updated Key",
 	}
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	h.PushRemoteConfig()
 }
 
 // GetKeysByUserID as said
@@ -254,11 +254,12 @@ func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.DB.Preload("Shares").Where("user_id = ?", params["user_id"]).Find(&keys)
-	json.NewEncoder(w).Encode(&keys)
+	write, _ := json.Marshal(&keys)
+	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
 // GetKeysByTribeID as said
-func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) { 
+func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var keys []models.Key
 
@@ -270,7 +271,6 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 		}`), http.StatusInternalServerError)
 		return
 	}
-
 
 	paramTribeID, _ := strconv.ParseUint(fmt.Sprintf("%s", params["tribe_id"]), 10, 32)
 
@@ -290,7 +290,7 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 			}`), http.StatusForbidden)
 			return
 		}
-		
+
 		var ok = false
 		for _, tribe := range userTribes {
 			if uint64(tribe.TribeID) == paramTribeID {
@@ -304,7 +304,8 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.DB.Preload("Shares").Where("tribe_id = ?", params["tribe_id"]).Find(&keys)
-	json.NewEncoder(w).Encode(&keys)
+	write, _ := json.Marshal(&keys)
+	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
 // ShareKey relasi antara user dan key
@@ -451,4 +452,31 @@ func (h *Handler) RevokeShare(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+}
+
+func (h *Handler) GetKeysHandler(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"error UID extraction",
+		}`), http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.RenderJSON(w, []byte(`
+		{
+			"message":"Request denied, super admin only",
+		}`), http.StatusForbidden)
+		return
+	}
+	//ADD FILTER, //ADD PAGINATION
+	var keys []models.Key
+	//IF USER IS SUPERADMIN, GET ALL
+	h.DB.Preload("Shares").Where("status = ?", "active").Order("created_at desc").Find(&keys)
+	//IF USER IS NORMAL USER, GET ALLOWED (to be updated)
+
+	write, _ := json.Marshal(&keys)
+	helpers.RenderJSON(w, write, http.StatusOK)
 }

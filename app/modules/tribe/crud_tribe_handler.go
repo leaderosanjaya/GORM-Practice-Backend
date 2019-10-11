@@ -151,7 +151,8 @@ func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var tribe models.Tribe
 	h.DB.Preload("Members").Preload("Keys").First(&tribe, params["tribe_id"])
-	json.NewEncoder(w).Encode(&tribe)
+	write, _ := json.Marshal(&tribe)
+	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
 // AssignUser assign user in tribe by lead
