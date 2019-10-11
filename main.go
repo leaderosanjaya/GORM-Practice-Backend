@@ -120,7 +120,7 @@ func main() {
 
 	//Get All keys
 	// TODO: ADD FILTER
-	// TODO: FILTER BY tribe, version, key_type, platform
+	// TODO: FILTER BY tribe, version, key_type, platform, status
 	s.HandleFunc("/api/keys", keyHandler.GetKeysHandler).Methods("GET")
 
 	//Create New key

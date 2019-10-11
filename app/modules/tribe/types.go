@@ -16,10 +16,3 @@ type Del struct {
 type Assign struct {
 	UID uint `json:"user_id"`
 }
-
-// JSONMessage struct object
-type JSONMessage struct {
-	Status    string `json:"status"`
-	ErrorCode string `json:"errorCode"`
-	Message   string `json:"message"`
-}
