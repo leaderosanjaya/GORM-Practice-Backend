@@ -46,6 +46,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {
 		log.Println(err)
+		return nil
 	}
 
 	resp := map[string]interface{}{"status": true, "message": "logged in"}
