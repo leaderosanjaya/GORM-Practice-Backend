@@ -31,15 +31,11 @@ func (h *Handler) GetEtag() (string, error) {
 	if resp.StatusCode == http.StatusOK {
 		return resp.Header["Etag"][0], nil
 	}
-	return "", nil
+	return "", fmt.Errorf("Bad Response E-Tag: %d", resp.StatusCode)
 }
 
 // GetToken return error
 func (h *Handler) GetToken() error {
-	// b, err := ioutil.ReadFile(h.CredentialsFile)
-	// if err != nil {
-	// 	return err
-	// }
 	var c = struct {
 		Email      string `json:"client_email"`
 		PrivateKey string `json:"private_key"`
@@ -67,8 +63,8 @@ func (h *Handler) Init() error {
 	h.ConfigFile = os.Getenv("configFile")
 	h.ProjectID = os.Getenv("PROJECT_ID")
 	baseURL := "https://firebaseremoteconfig.googleapis.com"
-	remoteConfigEndpoint := "v1/projects/" + h.ProjectID + "/remoteConfig"
-	h.RemoteConfigURL = baseURL + "/" + remoteConfigEndpoint
+	remoteConfigEndpoint := fmt.Sprintf("v1/projects/%s/remoteConfig", h.ProjectID)
+	h.RemoteConfigURL = fmt.Sprintf("%s/%s", baseURL, remoteConfigEndpoint)
 
 	err := h.GetToken()
 	if err != nil {

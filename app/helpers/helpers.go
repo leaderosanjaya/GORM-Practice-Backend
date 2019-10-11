@@ -59,3 +59,27 @@ func MarshalJSON(message interface{}) []byte {
 	}
 	return jsonData
 }
+
+// REFACTOR THIS
+// JSONMessage struct
+type JSONMessage struct {
+	Status bool `json:"status,omitempty"`
+	// ErrorCode string  `json:"errorCode,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+func SendOK(w http.ResponseWriter, msg string) {
+	message := JSONMessage{
+		Status:  true,
+		Message: msg,
+	}
+	RenderJSON(w, MarshalJSON(message), http.StatusOK)
+}
+
+func SendError(w http.ResponseWriter, msg string, errCode int) {
+	message := JSONMessage{
+		Status:  false,
+		Message: msg,
+	}
+	RenderJSON(w, MarshalJSON(message), errCode)
+}

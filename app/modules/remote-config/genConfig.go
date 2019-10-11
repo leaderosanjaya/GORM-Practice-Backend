@@ -7,9 +7,6 @@ import (
 	"github.com/GORM-practice/app/models"
 )
 
-//Get all keys
-//Get key name, Key Value
-
 // GetKeyData get key data, return slice of key and error
 func (h *Handler) GetKeyData() ([]models.Key, error) {
 	var keys []models.Key
@@ -18,8 +15,6 @@ func (h *Handler) GetKeyData() ([]models.Key, error) {
 	}
 	return keys, nil
 }
-
-//convert to Config data
 
 // ParseConfig parse the config, return config and error
 func (h *Handler) ParseConfig(keys []models.Key) (Config, error) {

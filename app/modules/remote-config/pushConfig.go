@@ -9,10 +9,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// FUNCTION PUBLISH
-// Accepts oauth2 token object & LATEST Etag string
-// Doesnt return anything.... should it tho?
-
 // PushData push data, return error
 func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 	//Attempt to read config file data
@@ -47,7 +43,7 @@ func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 		fmt.Println("Successfully Pushed new config file")
 		// fmt.Println("Etag from server: {%s}", resp.Header["Etag"][0])
 	} else {
-		fmt.Println("Failed to push new config file")
+		return fmt.Errorf("Failed to push new config file, response from server: %d", rest.StatusCode)
 	}
 	return nil
 }
