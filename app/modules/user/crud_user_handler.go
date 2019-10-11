@@ -28,19 +28,11 @@ import (
 
 //CreateUserHandler create user
 func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	status := http.StatusOK
-	message := JSONMessage{
-		Status:  "Success",
-		Message: "Registered User",
-	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("[CRUD User Read Body][User]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while registering"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		helpers.SendError(w, "error insert user", http.StatusBadRequest)
 		return
 	}
 
@@ -48,10 +40,7 @@ func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		fmt.Printf("[CRUD User Unmarshal JSON][User]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while registering"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		helpers.SendError(w, "error insert user", http.StatusBadRequest)
 		return
 	}
 
@@ -59,10 +48,8 @@ func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &cred)
 	if err != nil {
 		fmt.Printf("[CRUD User Unmarshal JSON][Cred]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while registering"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		helpers.SendError(w, "error insert user", http.StatusBadRequest)
+
 		return
 	}
 
@@ -72,64 +59,44 @@ func (h *Handler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	user = models.User(user)
 	if err = h.InsertUser(user); err != nil {
 		fmt.Printf("[CRUD User Insert User][User]: %s", err)
-		message.Status = "Failed"
-		message.Message = err.Error()
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		helpers.SendError(w, "error insert user", http.StatusInternalServerError)
 		return
 	}
 
-	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	helpers.SendOK(w, "user registered")
 	return
 }
 
 // DeleteUserHandler delete user handler
 func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	status := http.StatusOK
-	message := JSONMessage{
-		Status:  "Success",
-		Message: "Deleted User",
-	}
 
 	params := mux.Vars(r)
 
 	targetUint, err := strconv.ParseUint(params["user_id"], 10, 32)
 	if err != nil {
 		fmt.Printf("[crud_user_handler.go][DeleteUserHandler][ParseUint]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		helpers.SendError(w, "error delete user", http.StatusBadRequest)
 		return
 	}
 
 	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
-		helpers.RenderJSON(w, []byte(`
-		{
-			"message":"error UID extraction",
-		}`), http.StatusInternalServerError)
+		helpers.SendError(w, "error delete user", http.StatusBadRequest)
 		return
 	}
 
 	if role != 1 {
-		helpers.RenderJSON(w, []byte(`
-		{
-			"message":"Need Super Admin Permission",
-		}`), http.StatusUnauthorized)
+		helpers.SendError(w, "super admin access only", http.StatusForbidden)
 		return
 	}
 
 	if err = h.DeleteUser(uint(targetUint)); err != nil {
-		fmt.Printf("[CRUD User Insert User][User]: %s", err)
-		message.Status = "Failed"
-		message.Message = "Error while deleting"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		fmt.Printf("[CRUD User Delete User][User]: %s", err)
+		helpers.SendError(w, "error delete user", http.StatusInternalServerError)
 		return
 	}
 
-	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+	helpers.SendOK(w, "user deleted")
 	return
 }
 

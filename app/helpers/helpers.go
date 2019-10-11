@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Helps Mux to log
+// LoggingMiddleware Helps Mux to log
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Do stuff here
@@ -60,14 +60,14 @@ func MarshalJSON(message interface{}) []byte {
 	return jsonData
 }
 
-// REFACTOR THIS
 // JSONMessage struct
 type JSONMessage struct {
-	Status boolean `json:"status,omitempty"`
+	Status bool `json:"status,omitempty"`
 	// ErrorCode string  `json:"errorCode,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
+// SendOK sends ok response json
 func SendOK(w http.ResponseWriter, msg string) {
 	message := JSONMessage{
 		Status:  true,
@@ -76,6 +76,7 @@ func SendOK(w http.ResponseWriter, msg string) {
 	RenderJSON(w, MarshalJSON(message), http.StatusOK)
 }
 
+// SendError sends error json response
 func SendError(w http.ResponseWriter, msg string, errCode int) {
 	message := JSONMessage{
 		Status:  false,

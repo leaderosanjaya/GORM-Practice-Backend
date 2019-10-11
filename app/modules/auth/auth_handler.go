@@ -23,27 +23,16 @@ const user key = "user"
 // JwtVerify Verify jwt token for every request
 func JwtVerify(next http.Handler) http.Handler {
 	return (http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		status := http.StatusOK
-		message := JSONMessage{
-			Status:  "Success",
-			Message: "Deleted Tribe",
-		}
-
 		var header = r.Header.Get("Authorization")
 
 		if header == "" {
-			helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+			helpers.SendError(w, "Error: Found no token in header", http.StatusBadRequest)
 			return
 		}
 
 		headerSplit := strings.Split(header, " ")
 		if len(headerSplit) != 2 {
-			w.WriteHeader(http.StatusForbidden)
-			helpers.RenderJSON(w, []byte(`
-			{
-				message: "missing auth token",
-			}
-			`), http.StatusBadRequest)
+			helpers.SendError(w, "Missing auth token", http.StatusBadRequest)
 			return
 		}
 
@@ -62,11 +51,7 @@ func JwtVerify(next http.Handler) http.Handler {
 		})
 		if err != nil {
 			log.Println(err)
-			helpers.RenderJSON(w, []byte(`
-			{
-				message: "error, no auth token found, or your auth token is false",
-			}
-			`), http.StatusForbidden)
+			helpers.SendError(w, "error: no auth token found, or your auth token is false", http.StatusUnauthorized)
 			return
 		}
 
@@ -80,14 +65,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	cred := Credential{}
 	err := json.NewDecoder(r.Body).Decode(&cred)
 	if err != nil {
-		resp := map[string]interface{}{"status": false, "message": "Invalid request"}
-		json.NewEncoder(w).Encode(resp)
+		helpers.SendError(w, "Invalid request body", http.StatusUnprocessableEntity)
 		return
 	}
 
 	if lenPass := len(cred.Password); lenPass < 6 {
-		resp := map[string]interface{}{"status": false, "message": "Invalid password"}
-		json.NewEncoder(w).Encode(resp)
+		helpers.SendError(w, "Invalid password length, password lenght should be more than 6 character", http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -152,22 +135,18 @@ func (h *Handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		jsonMessage := []byte(`{"status":"401", "message": "Invalid Token Format"}`)
-		helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
+		helpers.SendError(w, "invalid token format", http.StatusUnauthorized)
 		return
 	}
 	if err == jwt.ErrSignatureInvalid {
-		jsonMessage := []byte(`{"status":"401", "message": "Token Signature Invalid"}`)
-		helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
+		helpers.SendError(w, "token signature invalid", http.StatusUnauthorized)
 		return
 	}
 
 	if !token.Valid {
-		jsonMessage := []byte(`{"status":"401", "message": "Invalid Token, this request has no authorization"}`)
-		helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
+		helpers.SendError(w, "invalid token, this request has no authorization token", http.StatusUnauthorized)
 		return
 	}
 
-	jsonMessage := []byte(`{"status":"200", "condition":"true", "message": "Token is Valid"}`)
-	helpers.RenderJSON(w, jsonMessage, http.StatusOK)
+	helpers.SendOK(w, "token is valid")
 }
