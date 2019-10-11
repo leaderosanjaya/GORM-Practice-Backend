@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/GORM-practice/app/helpers"
 	"github.com/GORM-practice/app/models"
 	"github.com/GORM-practice/app/modules/auth"
 	"github.com/GORM-practice/app/modules/key"
@@ -28,8 +29,8 @@ func main() {
 	if err != nil {
 		fmt.Printf("[main.go][ConnectDB]: %s\n", err)
 	}
-
 	defer db.Close()
+	// IMPROVE: CLEAN THIS UP
 	// new handler
 	userHandler := new(user.Handler)
 	tribeHandler := new(tribe.Handler)
@@ -45,6 +46,7 @@ func main() {
 	remoteConfigHandler.DB = db
 	keyHandler.PushRemoteConfig = remoteConfigHandler.PublishConfig
 
+	// IMPROVE PUT IN SINGLE FUNCTION
 	//Update schema to models.go
 	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{})
 	db.Model(&models.KeyShares{}).AddForeignKey("user_id", "users(user_id)", "CASCADE", "CASCADE")
@@ -55,6 +57,7 @@ func main() {
 
 	//New Router
 	router := mux.NewRouter()
+
 	headers := gorillaHandler.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := gorillaHandler.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
 	origins := gorillaHandler.AllowedOrigins([]string{"*"})
@@ -62,29 +65,43 @@ func main() {
 	s := router.PathPrefix("/auth").Subrouter()
 	s.Use(auth.JwtVerify)
 
+	// route to test if API is alive or not
 	router.HandleFunc("/api", index).Methods("GET")
 
 	//Login user
 	router.HandleFunc("/api/login", authHandler.Login).Methods("POST")
 
-	//Create and delete user
+	//Create User
 	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST")
+
+	// IMPROVE: Get users by filter
+	// router.HandleFunc("/api/users", userHandler.GetUsers).Methods("GET")
+
+	// Delete User
 	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
+
 	//Get user By ID
 	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")
-	//Get user keys by ID
-	//IMPLEMENT FILTER SOON.
-	s.HandleFunc("/api/users/{user_id:[0-9]+}/keys", keyHandler.GetKeysByUserID).Methods("GET")
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET")
-	//Get shared keys by ID
 
-	//Get user by filter
-	// router.HandleFunc("/api/users", userHandler.GetUsers).Methods("GET")
+	//Get user keys by ID
+	// TODO implement filter
+	s.HandleFunc("/api/users/{user_id:[0-9]+}/keys", keyHandler.GetKeysByUserID).Methods("GET")
+
+	// IMPROVE: Get user affiliated tribes
 	// router.HandleFunc("/api/user/{user_id:[0-9]+}/tribes")
 
-	//Create and delete tribe
+	// Get keys from tribe ID
+	// TODO implement filter
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET")
+
+	//Create Tribe
 	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
+	//Delete Tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE")
+
+	// TODO: implement this
+	// Get Tribes
+	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
 
 	//Assign user to tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")
@@ -92,38 +109,36 @@ func main() {
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
 	//get tribe by id
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
-	//Get tribe keys
+
+	// TODO Get tribe keys
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/keys").Methods("GET")
-	//Get tribe users
+	// TODO Get tribe users
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/users").Methods("GET")
-	//Create and delete Key
+
+	//Get All keys
+	// TODO: ADD FILTER
+	// TODO: FILTER BY tribe, version, key_type, platform
 	s.HandleFunc("/api/keys", keyHandler.GetKeysHandler).Methods("GET")
+
+	//Create New key
 	s.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")
+
+	//Delete Key by ID
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE")
-	//Get key by ID
+
+	//Get Key by ID
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")
+
 	//Update Key by ID
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.UpdateKeyByID).Methods("PUT")
 
 	//Assign Key Share
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.ShareKey).Methods("POST")
+
 	//Remove Key Share
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
 
-	//Get keys by filter
-	// router.HandleFunc("/api/keys/").Methods("GET")
-
-	//Get key user functions
-	//Read Key list given User, use Limit and Page
-
-	//Delete Key by Name
-
-	//Update Key by Name, given new value
-	//change it to execute from createkey
-	// err = remoteConfigHandler.PublishConfig()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
+	router.Use(helpers.LoggingMiddleware)
 	port := os.Getenv("PORT") //Get port from .env file, we did not specify any port so this should return an empty string when tested locally
 	if port == "" {
 		port = "8080" //localhost

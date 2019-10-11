@@ -17,11 +17,11 @@ import (
 func (h *Handler) FindOne(email, password string) map[string]interface{} {
 	user := models.User{}
 
-	if err := h.DB.Debug().Where("email= ?", email).First(&user).Error; err != nil {
+	if err := h.DB.Where("email= ?", email).First(&user).Error; err != nil {
 		resp := map[string]interface{}{"status": false, "message": "email not found"}
 		return resp
 	}
-	
+
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		fmt.Println(err)
 		resp := map[string]interface{}{"status": false, "message": "credential false"}

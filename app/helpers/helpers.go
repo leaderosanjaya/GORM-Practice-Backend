@@ -3,10 +3,27 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+// Helps Mux to log
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do stuff here
+
+		start := time.Now().UTC()
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+		end := time.Now().UTC()
+		lat := end.Sub(start)
+
+		log.Printf("[API CALL] ROUTE:'%s'[METHOD: %s] %s", r.RequestURI, r.Method, lat)
+	})
+}
 
 // RenderJSON returns message in JSON to http body
 func RenderJSON(w http.ResponseWriter, data []byte, status int) {

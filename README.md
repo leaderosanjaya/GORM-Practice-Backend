@@ -23,5 +23,3 @@ A simple project made to demonstrate REST api calls using GORM
 | Key   | /auth/api/keys/{key_id}             | PUT    | keyHandler.UpdateKeyByID        | Update Key                            |
 | Key   | /auth/api/keys/{key_id}/shares      | POST   | keyHandler.ShareKey             | Share key to another member           |
 | Key   | /auth/api/keys/{key_id}/shares      | DELETE | keyHandler.RevokeShare          | Remove shared key from another member |
-
-#TBA
