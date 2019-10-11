@@ -43,7 +43,7 @@ func (h *Handler) PushData(token *oauth2.Token, Etag string) error {
 		fmt.Println("Successfully Pushed new config file")
 		// fmt.Println("Etag from server: {%s}", resp.Header["Etag"][0])
 	} else {
-		return fmt.Errorf("Failed to push new config file, response from server: %d", rest.StatusCode)
+		return fmt.Errorf("Failed to push new config file, response from server: %d", resp.StatusCode)
 	}
 	return nil
 }
