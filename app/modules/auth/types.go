@@ -29,3 +29,10 @@ type Credential struct {
 type Claims struct {
 	jwt.StandardClaims
 }
+
+// JSONMessage struct object
+type JSONMessage struct {
+	Status    string `json:"status"`
+	ErrorCode string `json:"errorCode"`
+	Message   string `json:"message"`
+}

@@ -23,16 +23,16 @@ const user key = "user"
 // JwtVerify Verify jwt token for every request
 func JwtVerify(next http.Handler) http.Handler {
 	return (http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		status := http.StatusOK
+		message := JSONMessage{
+			Status:  "Success",
+			Message: "Deleted Tribe",
+		}
 
 		var header = r.Header.Get("Authorization")
 
 		if header == "" {
-			w.WriteHeader(http.StatusForbidden)
-			helpers.RenderJSON(w, []byte(`
-			{
-				message: "missing auth token",
-			}
-			`), http.StatusBadRequest)
+			helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
 			return
 		}
 
@@ -57,7 +57,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
+		_, err = jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
 			return []byte(os.Getenv("SECRET_KEY")), nil
 		})
 		if err != nil {
@@ -69,21 +69,6 @@ func JwtVerify(next http.Handler) http.Handler {
 			`), http.StatusForbidden)
 			return
 		}
-		
-		if err == jwt.ErrSignatureInvalid {
-			jsonMessage := []byte(`{"status":"401", "message": "Token Signature Invalid"}`)
-			helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
-			return
-		}
-	
-		if !token.Valid {
-			jsonMessage := []byte(`{"status":"401", "message": "Invalid Token, this request has no authorization"}`)
-			helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
-			return
-		}
-	
-		jsonMessage := []byte(`{"status":"200", "condition":"true", "message": "Token is Valid"}`)
-		helpers.RenderJSON(w, jsonMessage, http.StatusOK)
 
 		ctx := context.WithValue(r.Context(), user, tk)
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -107,7 +92,9 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := h.FindOne(cred.Email, cred.Password)
-	json.NewEncoder(w).Encode(resp)
+	message, _ := json.Marshal(resp)
+	helpers.RenderJSON(w, message, http.StatusOK)
+	// json.NewEncoder(w).Encode(resp)
 }
 
 // ExtractToken to extract token from http request header
