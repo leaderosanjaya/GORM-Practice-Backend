@@ -3,10 +3,27 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+// LoggingMiddleware Helps Mux to log
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do stuff here
+
+		start := time.Now().UTC()
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+		end := time.Now().UTC()
+		lat := end.Sub(start)
+
+		log.Printf("[API CALL] ROUTE:'%s'[METHOD: %s] %s", r.RequestURI, r.Method, lat)
+	})
+}
 
 // RenderJSON returns message in JSON to http body
 func RenderJSON(w http.ResponseWriter, data []byte, status int) {
@@ -41,4 +58,29 @@ func MarshalJSON(message interface{}) []byte {
 		jsonData = []byte(err.Error())
 	}
 	return jsonData
+}
+
+// JSONMessage struct
+type JSONMessage struct {
+	Status bool `json:"status,omitempty"`
+	// ErrorCode string  `json:"errorCode,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// SendOK sends ok response json
+func SendOK(w http.ResponseWriter, msg string) {
+	message := JSONMessage{
+		Status:  true,
+		Message: msg,
+	}
+	RenderJSON(w, MarshalJSON(message), http.StatusOK)
+}
+
+// SendError sends error json response
+func SendError(w http.ResponseWriter, msg string, errCode int) {
+	message := JSONMessage{
+		Status:  false,
+		Message: msg,
+	}
+	RenderJSON(w, MarshalJSON(message), errCode)
 }

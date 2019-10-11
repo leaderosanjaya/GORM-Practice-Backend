@@ -14,13 +14,6 @@ type Del struct {
 	UID uint `json:"uid"`
 }
 
-// JSONMessage structure to define message
-type JSONMessage struct {
-	Status    string `json:"status"`
-	ErrorCode string `json:"errorCode"`
-	Message   string `json:"message"`
-}
-
 // Credential structure
 type Credential struct {
 	Password string `json:"password"`
