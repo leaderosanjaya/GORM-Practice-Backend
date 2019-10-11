@@ -6,17 +6,19 @@ import (
 
 //CreateKey create key
 func (h *Handler) CreateKey(key models.Key) error {
-	//add keys from the user
-	//add keys from the user
+	//Initialize User and Tribe variable
 	var user models.User
 	var tribe models.Tribe
+	//Get related user & tribe
 	h.DB.First(&user, key.UserID)
 	h.DB.First(&tribe, key.TribeID)
 
+	//Execute Create key
 	if dbc := h.DB.Create(&key); dbc.Error != nil {
 		return dbc.Error
 	}
 
+	//Associate new key to related user and tribe
 	h.DB.Model(&user).Association("Keys").Append(key)
 	h.DB.Model(&tribe).Association("Keys").Append(key)
 	return nil
@@ -24,8 +26,7 @@ func (h *Handler) CreateKey(key models.Key) error {
 
 //DeleteKey by providing the given Key ID
 func (h *Handler) DeleteKey(targetID uint) error {
-	//remove keys from the user
-	//remove keys from the tribe, edit tribe key count
+	//Get target and execute delete
 	if err := h.DB.Where("key_id = ?", targetID).Delete(models.Key{}).Error; err != nil {
 		return err
 	}
@@ -33,6 +34,7 @@ func (h *Handler) DeleteKey(targetID uint) error {
 }
 
 func updateValue(updateKey *models.Key, key *models.Key) {
+	//Function for update key
 	if updateKey.KeyName != "" {
 		key.KeyName = updateKey.KeyName
 	}

@@ -63,7 +63,7 @@ func MarshalJSON(message interface{}) []byte {
 // REFACTOR THIS
 // JSONMessage struct
 type JSONMessage struct {
-	Status boolean `json:"status,omitempty"`
+	Status bool `json:"status,omitempty"`
 	// ErrorCode string  `json:"errorCode,omitempty"`
 	Message string `json:"message,omitempty"`
 }
