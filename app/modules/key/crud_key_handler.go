@@ -57,7 +57,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.SendOK(w, "Key created Successfully", http.StatusOK)
+	helpers.SendOK(w, "Key created Successfully")
 	err = h.PushRemoteConfig()
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][PushRemoteConfig]: %s\n", err)
@@ -100,7 +100,7 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.SendOK(w, "Key deleted successfully", http.StatusOK)
+	helpers.SendOK(w, "Key deleted successfully")
 	err = h.PushRemoteConfig()
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][PushRemoteConfig]: %s\n", err)
