@@ -13,45 +13,35 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//TO DO IN KEY PACKAGE
-//Update Key By ID (Input Using GORM, more to it later)
-//Get Key By Filter(Name, Type, Platform, App Version, Tribe, Status)
+// TODO IN KEY PACKAGE
+// TODO Get Key By Filter(Name, Type, Platform, App Version, Tribe, Status)
 
 // CreateKeyHandler create key
 func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
-	status := http.StatusOK
-	message := JSONMessage{
-		Status:  "Success",
-		Message: "Created Key",
-	}
+	// status := http.StatusOK
+	// message := JSONMessage{
+	// 	Status:  true,
+	// 	Message: "Created Key",
+	// }
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][ReadBody]: %s\n", err)
-		message.Status = "Failed"
-		message.Message = "Error when creating key"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		helpers.SendError(w, "Error when creating key", http.StatusBadRequest)
 		return
 	}
 
 	key := models.Key{}
 	if err = json.Unmarshal(body, &key); err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][UnmarshalJSON]: %s\n", err)
-		message.Status = "Failed"
-		message.Message = "Error when creating key"
-		status = http.StatusBadRequest
-		helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
+		helpers.SendError(w, "Error when creating key", http.StatusBadRequest)
 		return
 	}
 
 	// Get user ID from token
 	uid, _, err := auth.ExtractTokenUID(r)
 	if err != nil {
-		helpers.RenderJSON(w, []byte(`
-		{
-			"message":"error UID extraction",
-		}`), http.StatusInternalServerError)
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
 		return
 	}
 
@@ -62,7 +52,7 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	key.TribeID = user.TribeID
 
 	if err = h.CreateKey(key); err != nil {
-		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][InsertTribe]: %s\n", err)
+		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][CreateKey]: %s\n", err)
 		message.Status = "Failed"
 		message.Message = "Error when creating key"
 		status = http.StatusBadRequest
@@ -71,7 +61,11 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-	h.PushRemoteConfig()
+	err = h.PushRemoteConfig()
+	if err != nil {
+		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][PushRemoteConfig]: %s\n", err)
+	}
+	return
 }
 
 // DeleteKeyHandler delete key
@@ -131,7 +125,11 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-	h.PushRemoteConfig()
+	err = h.PushRemoteConfig()
+	if err != nil {
+		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][PushRemoteConfig]: %s\n", err)
+	}
+	return
 }
 
 //GetKeyByID by user
@@ -228,7 +226,11 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 		Message: "Updated Key",
 	}
 	helpers.RenderJSON(w, helpers.MarshalJSON(message), status)
-	h.PushRemoteConfig()
+	err = h.PushRemoteConfig()
+	if err != nil {
+		fmt.Printf("[crud_key_handler.go][UpdateKeyByID][PushRemoteConfig]: %s\n", err)
+	}
+	return
 }
 
 // GetKeysByUserID as said
