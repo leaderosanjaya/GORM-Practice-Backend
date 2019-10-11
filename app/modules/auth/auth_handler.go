@@ -57,7 +57,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		_, err = jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
 			return []byte(os.Getenv("SECRET_KEY")), nil
 		})
 		if err != nil {
@@ -69,6 +69,21 @@ func JwtVerify(next http.Handler) http.Handler {
 			`), http.StatusForbidden)
 			return
 		}
+		
+		if err == jwt.ErrSignatureInvalid {
+			jsonMessage := []byte(`{"status":"401", "message": "Token Signature Invalid"}`)
+			helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
+			return
+		}
+	
+		if !token.Valid {
+			jsonMessage := []byte(`{"status":"401", "message": "Invalid Token, this request has no authorization"}`)
+			helpers.RenderJSON(w, jsonMessage, http.StatusUnauthorized)
+			return
+		}
+	
+		jsonMessage := []byte(`{"status":"200", "condition":"true", "message": "Token is Valid"}`)
+		helpers.RenderJSON(w, jsonMessage, http.StatusOK)
 
 		ctx := context.WithValue(r.Context(), user, tk)
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -137,7 +152,7 @@ func ExtractTokenUID(r *http.Request) (uint64, int64, error) {
 }
 
 // ValidateToken to validate token request
-func ValidateToken(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	tokenString := r.Header.Get("Authorization")
 	splitToken := strings.Split(tokenString, " ")

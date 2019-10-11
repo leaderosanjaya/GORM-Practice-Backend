@@ -71,6 +71,9 @@ func main() {
 	//Login user
 	router.HandleFunc("/api/login", authHandler.Login).Methods("POST")
 
+	//Validate token user has
+	s.HandleFunc("/api/user/valid", authHandler.ValidateToken).Methods("GET")
+
 	//Create User
 	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST")
 
