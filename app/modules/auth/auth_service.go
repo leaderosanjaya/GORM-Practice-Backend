@@ -29,7 +29,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 	}
 
 	// JWT
-	expiresAt := time.Now().Add(time.Minute * 5).Unix()
+	expiresAt := time.Now().Add(time.Minute * 10).Unix()
 
 	tk := &Token{
 		UserID: user.ID,
