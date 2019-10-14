@@ -159,7 +159,7 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.DB.Model(&tribe).Association("Members").Append(models.TribeAssign{UserID: assign.UID, TribeID: uint(tribeUint)})
+	h.DB.Model(&tribe).Association("Members").Append(models.TribeAssign{UserID: assign.UID, TribeID: uint(tribeUint), Platform: assign.PlatformID})
 
 	helpers.SendOK(w, "user assigned")
 	return
