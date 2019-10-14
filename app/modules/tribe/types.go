@@ -15,4 +15,5 @@ type Del struct {
 // Assign user_id
 type Assign struct {
 	UID uint `json:"user_id"`
+	PlatformID uint `json:"platform"`
 }

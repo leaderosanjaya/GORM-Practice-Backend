@@ -19,3 +19,9 @@ type Del struct {
 type Assign struct {
 	UID uint `json:"user_id"`
 }
+
+// // Transaction struct db transaction
+// type Transaction struct {
+// 	DB *gorm.DB
+// 	PushRemoteConfig (func() error)
+// }
