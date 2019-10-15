@@ -112,6 +112,9 @@ func (h *Handler) PushToDB() error {
 		key.KeyName = k
 		key.KeyValue = v.DefaultValue.Value
 		key.Description = v.Description
+		key.Status = "unregistered"
+	
+
 
 		h.DB.Table("keys").Create(&key)
 	}
