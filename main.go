@@ -48,7 +48,7 @@ func main() {
 
 	// IMPROVE PUT IN SINGLE FUNCTION
 	//Update schema to models.go
-	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{})
+	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{}, &models.TribeLeadAssign{})
 	db.Model(&models.KeyShares{}).AddForeignKey("user_id", "users(user_id)", "CASCADE", "CASCADE")
 	db.Model(&models.KeyShares{}).AddForeignKey("key_id", "keys(key_id)", "CASCADE", "CASCADE")
 
@@ -104,7 +104,13 @@ func main() {
 
 	// TODO: implement this
 	// Get Tribes
-	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
+	// s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
+
+	// TODO ADD IN DOCS
+	// Assign Lead
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/leads", tribeHandler.AddTribeLead).Methods("POST")
+	// Remove Lead
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/leads", tribeHandler.RemoveTribeLead).Methods("DELETE")
 
 	//Assign user to tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")

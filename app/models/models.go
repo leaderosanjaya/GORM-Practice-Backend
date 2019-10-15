@@ -19,16 +19,16 @@ type User struct {
 
 // Tribe struct, tribe data model in DB
 type Tribe struct {
-	ID          uint          `json:"tribe_id" gorm:"primary_key;column:tribe_id"`
-	CreatedAt   time.Time     `json:"-"`
-	UpdatedAt   time.Time     `json:"-"`
-	TribeName   string        `json:"tribe_name" gorm:"type:varchar(255);not null;unique"`
-	LeadID      uint          `json:"lead_id"` //use lead_id as foreign key
-	Description string        `json:"description" gorm:"type:text"`
-	TotalMember int           `json:"total_member" gorm:"not null;default:1"`
-	TotalKey    int           `json:"total_key" gorm:"not null;default:0"`
-	Keys        []Key         `json:"keys" gorm:"foreignkey:TribeID"`
-	Members     []TribeAssign `json:"members"`
+	ID          uint              `json:"tribe_id" gorm:"primary_key;column:tribe_id"`
+	CreatedAt   time.Time         `json:"-"`
+	UpdatedAt   time.Time         `json:"-"`
+	TribeName   string            `json:"tribe_name" gorm:"type:varchar(255);not null;unique"`
+	Leads       []TribeLeadAssign `json:"tribe_leads"` //use lead_id as foreign key
+	Description string            `json:"description" gorm:"type:text"`
+	TotalMember int               `json:"total_member" gorm:"not null;default:1"`
+	TotalKey    int               `json:"total_key" gorm:"not null;default:0"`
+	Keys        []Key             `json:"keys" gorm:"foreignkey:TribeID"`
+	Members     []TribeAssign     `json:"members"`
 }
 
 // Key struct, key data model in DB
@@ -58,5 +58,11 @@ type KeyShares struct {
 // TribeAssign user association with tribe
 type TribeAssign struct {
 	UserID  uint `gorm:"primary_key"`
+	TribeID uint `gorm:"primary_key"`
+}
+
+// TribeLeadAssign user lead
+type TribeLeadAssign struct {
+	LeadID  uint `gorm:"primary_key"`
 	TribeID uint `gorm:"primary_key"`
 }
