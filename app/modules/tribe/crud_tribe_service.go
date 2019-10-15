@@ -17,6 +17,10 @@ func (h *Handler) CreateTribe(tribe TribeCreate) error {
 	//Get tribe lead id
 	//Insert tribe to lead user
 
+	if tribe.LeadID != 0 {
+		newTribe.TotalMember = 1
+	}
+
 	if dbc := h.DB.Create(&newTribe); dbc.Error != nil {
 		return dbc.Error
 	}
@@ -38,4 +42,13 @@ func (h *Handler) DeleteTribe(targetID uint) error {
 		return errors.New("tribe does not exist")
 	}
 	return nil
+}
+
+func UpdateValue(updateTribe *models.Tribe, tribe *models.Tribe) {
+	if updateTribe.TribeName != "" {
+		tribe.TribeName = updateTribe.TribeName
+	}
+	if updateTribe.Description != "" {
+		tribe.Description = updateTribe.Description
+	}
 }

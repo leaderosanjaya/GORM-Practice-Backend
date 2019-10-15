@@ -18,6 +18,8 @@ func (h *Handler) CreateKey(key models.Key) error {
 		return dbc.Error
 	}
 
+	tribe.TotalKey = tribe.TotalKey + 1
+	h.DB.Save(&tribe)
 	//Associate new key to related user and tribe
 	h.DB.Model(&user).Association("Keys").Append(key)
 	h.DB.Model(&tribe).Association("Keys").Append(key)
@@ -26,6 +28,10 @@ func (h *Handler) CreateKey(key models.Key) error {
 
 //DeleteKey by providing the given Key ID
 func (h *Handler) DeleteKey(targetID uint) error {
+	var tribe models.Tribe
+	h.DB.First(&tribe, targetID)
+	tribe.TotalKey = tribe.TotalKey - 1
+	h.DB.Save(&tribe)
 	//Get target and execute delete
 	if err := h.DB.Where("key_id = ?", targetID).Delete(models.Key{}).Error; err != nil {
 		return err

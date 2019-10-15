@@ -99,7 +99,44 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//TODO REFACTOR
+// IMPROVE
+func (h *Handler) UpdateTribeByID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var tribe models.Tribe
+	h.DB.First(&tribe, params["tribe_id"])
+
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+
+	if role < 1 && !UintInSlice(tribe.Leads, uid) { // Get user own key
+		helpers.SendError(w, "You are not authorized for this request", http.StatusUnauthorized)
+		return
+	}
+
+	//read edit info
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("[crud_user_handler.go][UpdateUserByID][ReadBody]: %s\n", err)
+		helpers.SendError(w, "Error when updating key", http.StatusBadRequest)
+		return
+	}
+
+	updateTribe := models.Tribe{}
+	if err = json.Unmarshal(body, &updateTribe); err != nil {
+		fmt.Printf("[crud_user_handler.go][UpdateUserByID][UnmarshalJSON]: %s\n", err)
+		helpers.SendError(w, "Error when updating key", http.StatusBadRequest)
+		return
+	}
+
+	UpdateValue(&updateTribe, &tribe)
+	h.DB.Save(&tribe)
+	helpers.SendOK(w, "Updated tribe")
+}
+
+//IMPROVE
 func (h *Handler) AddTribeLead(w http.ResponseWriter, r *http.Request) {
 	//Superadmin handling
 	_, role, err := auth.ExtractTokenUID(r)
@@ -150,12 +187,13 @@ func (h *Handler) AddTribeLead(w http.ResponseWriter, r *http.Request) {
 
 	h.DB.Model(&tribe).Association("Leads").Append(models.TribeLeadAssign{LeadID: assign.UID, TribeID: uint(tribeUint)})
 	h.DB.Model(&lead).Association("Tribes").Append(models.TribeAssign{UserID: assign.UID, TribeID: uint(tribeUint)})
-
+	tribe.TotalMember = tribe.TotalMember + 1
+	h.DB.Save(&tribe)
 	helpers.SendOK(w, "Lead added")
 	return
 }
 
-//TODO: REFACTOR & FINISH
+//IMPROVE
 func (h *Handler) RemoveTribeLead(w http.ResponseWriter, r *http.Request) {
 	//Superadmin handling
 	_, role, err := auth.ExtractTokenUID(r)
@@ -213,7 +251,8 @@ func (h *Handler) RemoveTribeLead(w http.ResponseWriter, r *http.Request) {
 		helpers.SendError(w, "user is not a lead", http.StatusBadRequest)
 		return
 	}
-
+	tribe.TotalMember = tribe.TotalMember - 1
+	h.DB.Save(&tribe)
 	helpers.SendOK(w, "Lead removed")
 	return
 }
@@ -238,6 +277,7 @@ func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
+// TODO GET USER BY EMAIL
 // AssignUser assign user in tribe by lead
 func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 
@@ -290,7 +330,8 @@ func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.DB.Model(&tribe).Association("Members").Append(models.TribeAssign{UserID: assign.UID, TribeID: uint(tribeUint)})
-
+	tribe.TotalMember = tribe.TotalMember + 1
+	h.DB.Save(&tribe)
 	helpers.SendOK(w, "user assigned")
 	return
 }
@@ -341,7 +382,8 @@ func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 		helpers.SendError(w, "user is not assigned", http.StatusBadRequest)
 		return
 	}
-
+	tribe.TotalMember = tribe.TotalMember - 1
+	h.DB.Save(&tribe)
 	helpers.SendOK(w, "removed user")
 	return
 }
