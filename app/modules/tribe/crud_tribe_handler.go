@@ -119,15 +119,15 @@ func (h *Handler) UpdateTribeByID(w http.ResponseWriter, r *http.Request) {
 	//read edit info
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("[crud_user_handler.go][UpdateUserByID][ReadBody]: %s\n", err)
-		helpers.SendError(w, "Error when updating key", http.StatusBadRequest)
+		fmt.Printf("[crud_tribe_handler.go][UpdateTribeByID][ReadBody]: %s\n", err)
+		helpers.SendError(w, "Error when updating tribe", http.StatusBadRequest)
 		return
 	}
 
 	updateTribe := models.Tribe{}
 	if err = json.Unmarshal(body, &updateTribe); err != nil {
-		fmt.Printf("[crud_user_handler.go][UpdateUserByID][UnmarshalJSON]: %s\n", err)
-		helpers.SendError(w, "Error when updating key", http.StatusBadRequest)
+		fmt.Printf("[crud_tribe_handler.go][UpdateTribeByID][UnmarshalJSON]: %s\n", err)
+		helpers.SendError(w, "Error when updating tribe", http.StatusBadRequest)
 		return
 	}
 

@@ -130,14 +130,14 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("[crud_user_handler.go][UpdateUserByID][ReadBody]: %s\n", err)
-		helpers.SendError(w, "Error when updating key", http.StatusBadRequest)
+		helpers.SendError(w, "Error when updating user", http.StatusBadRequest)
 		return
 	}
 
 	updateUser := models.User{}
 	if err = json.Unmarshal(body, &updateUser); err != nil {
 		fmt.Printf("[crud_user_handler.go][UpdateUserByID][UnmarshalJSON]: %s\n", err)
-		helpers.SendError(w, "Error when updating key", http.StatusBadRequest)
+		helpers.SendError(w, "Error when updating user", http.StatusBadRequest)
 		return
 	}
 
