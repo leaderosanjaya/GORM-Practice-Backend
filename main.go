@@ -69,8 +69,8 @@ func main() {
 
 	router.HandleFunc("/api", index).Methods("GET") // route to test if API is alive or not
 
-	router.HandleFunc("/api/login", authHandler.Login).Methods("POST") //Login user
-	s.HandleFunc("/api/user/valid", authHandler.ValidateToken).Methods("GET") //Validate token user has
+	router.HandleFunc("/api/login", authHandler.Login).Methods("POST") // Login user
+	s.HandleFunc("/api/user/valid", authHandler.ValidateToken).Methods("GET") // Validate token user has
 
 
 	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST") //Create User
