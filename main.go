@@ -87,6 +87,7 @@ func main() {
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET") // Get keys from tribe ID // TODO: implement filter
 
 	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")                     //Create Tribe
+	s.HandleFunc("/api/tribes", tribeHandler.GetAllTribes).Methods("GET")                            //Get Tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE") //Delete Tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.UpdateTribeByID).Methods("PUT")       //Update Tribe
 	// TODO: implement this

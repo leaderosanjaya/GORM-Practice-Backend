@@ -394,3 +394,21 @@ func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 	helpers.SendOK(w, "removed user")
 	return
 }
+
+func (h *Handler) GetAllTribes(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
+		return
+	}
+
+	var tribes []models.Tribe
+	h.DB.Preload("Members").Preload("Leads").Preload("Keys").Order("tribe_id desc").Find(&tribes)
+	write, _ := json.Marshal(&tribes)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
