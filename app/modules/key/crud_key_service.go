@@ -9,6 +9,7 @@ func (h *Handler) CreateKey(key models.Key) error {
 	//Initialize User and Tribe variable
 	var user models.User
 	var tribe models.Tribe
+
 	//Get related user & tribe
 	h.DB.First(&user, key.UserID)
 	h.DB.First(&tribe, key.TribeID)

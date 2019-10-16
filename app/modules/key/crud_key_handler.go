@@ -1,6 +1,7 @@
 package key
 
 import (
+	"strings"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,12 +19,7 @@ import (
 
 // CreateKeyHandler create key
 func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
-	// status := http.StatusOK
-	// message := JSONMessage{
-	// 	Status:  true,
-	// 	Message: "Created Key",
-	// }
-
+	
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][ReadBody]: %s\n", err)
@@ -34,6 +30,13 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	key := models.Key{}
 	if err = json.Unmarshal(body, &key); err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][UnmarshalJSON]: %s\n", err)
+		helpers.SendError(w, "Error when creating key", http.StatusBadRequest)
+		return
+	}
+
+	// Check if key name contains spaces :: Firebase will return 400
+	if strings.ContainsAny(key.KeyName, " ") {
+		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][UnmarshalJSON]: key name contains spaces\n")
 		helpers.SendError(w, "Error when creating key", http.StatusBadRequest)
 		return
 	}
@@ -57,12 +60,12 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.SendOK(w, "Key created Successfully")
 	err = h.PushRemoteConfig()
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][PushRemoteConfig]: %s\n", err)
+		return
 	}
-	return
+	helpers.SendOK(w, "Key created Successfully")
 }
 
 // DeleteKeyHandler delete key
@@ -100,12 +103,12 @@ func (h *Handler) DeleteKeyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.SendOK(w, "Key deleted successfully")
 	err = h.PushRemoteConfig()
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][DeleteKeyHandler][PushRemoteConfig]: %s\n", err)
+		return
 	}
-	return
+	helpers.SendOK(w, "Key deleted successfully")
 }
 
 //GetKeyByID by user
@@ -170,13 +173,13 @@ func (h *Handler) UpdateKeyByID(w http.ResponseWriter, r *http.Request) {
 	updateValue(&updateKey, &key)
 	h.DB.Save(&key)
 
-	helpers.SendOK(w, "Updated key")
-
 	err = h.PushRemoteConfig()
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][UpdateKeyByID][PushRemoteConfig]: %s\n", err)
+		return
 	}
-	return
+
+	helpers.SendOK(w, "Updated key")
 }
 
 // GetKeysByUserID as said
@@ -341,6 +344,7 @@ func (h *Handler) RevokeShare(w http.ResponseWriter, r *http.Request) {
 	helpers.SendOK(w, "Revoked Key Access Successfully")
 }
 
+// GetKeysHandler returns all keys
 func (h *Handler) GetKeysHandler(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
 	_, role, err := auth.ExtractTokenUID(r)
