@@ -67,97 +67,55 @@ func main() {
 	s := router.PathPrefix("/auth").Subrouter()
 	s.Use(auth.JwtVerify)
 
-	// route to test if API is alive or not
-	router.HandleFunc("/api", index).Methods("GET")
+	router.HandleFunc("/api", index).Methods("GET") // route to test if API is alive or not
 
-	//Login user
-	router.HandleFunc("/api/login", authHandler.Login).Methods("POST")
+	router.HandleFunc("/api/login", authHandler.Login).Methods("POST") //Login user
+	s.HandleFunc("/api/user/valid", authHandler.ValidateToken).Methods("GET") //Validate token user has
 
-	//Validate token user has
-	s.HandleFunc("/api/user/valid", authHandler.ValidateToken).Methods("GET")
 
-	//Create User
-	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST")
-
+	router.HandleFunc("/api/users", userHandler.CreateUserHandler).Methods("POST") //Create User
 	// IMPROVE: Get users by filter
 	// router.HandleFunc("/api/users", userHandler.GetUsers).Methods("GET")
 
-	// Delete User
-	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
+	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE") // Delete User
+  s.HandleFunc("/api/users", userHandler.GetAllUsers).Methods("GET") //Get All User
+	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET") //Get user By ID
+	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.UpdateUserByID).Methods("PUT") //Update User
+	s.HandleFunc("/api/tribes/user/{user_id:[0-9]+}", userHandler.GetTribeByUserID) // Get user affiliated tribes
+	s.HandleFunc("/api/tribes/user", userHandler.GetTribeByUser).Methods("GET") // Get tribe by userid(GET METHOD, depend on auth token)
 
-	//Get All User
-	s.HandleFunc("/api/users", userHandler.GetAllUsers).Methods("GET")
 
-	//Get user By ID
-	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")
+	s.HandleFunc("/api/users/{user_id:[0-9]+}/keys", keyHandler.GetKeysByUserID).Methods("GET") //Get user keys by ID // TODO: implement filter
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET") // Get keys from tribe ID // TODO: implement filter
 
-	//Update User
-	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.UpdateUserByID).Methods("PUT")
-
-	//Get user keys by ID
-	// TODO implement filter
-	s.HandleFunc("/api/users/{user_id:[0-9]+}/keys", keyHandler.GetKeysByUserID).Methods("GET")
-
-	// IMPROVE: Get user affiliated tribes
-	// router.HandleFunc("/api/user/{user_id:[0-9]+}/tribes")
-
-	// Get keys from tribe ID
-	// TODO implement filter
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET")
-
-	//Create Tribe
-	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
-	//Delete Tribe
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE")
-
-	//Update Tribe
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.UpdateTribeByID).Methods("PUT")
-
+	
+	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST") //Create Tribe
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE") //Delete Tribe
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.UpdateTribeByID).Methods("PUT") //Update Tribe
 	// TODO: implement this
-	// Get Tribes
-	// s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")
+		// Get Tribes
 
-	// TODO ADD IN DOCS
-	// Assign Lead
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/leads", tribeHandler.AddTribeLead).Methods("POST")
-	// Remove Lead
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/leads", tribeHandler.RemoveTribeLead).Methods("DELETE")
+	// TODO: ADD IN DOCS
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/leads", tribeHandler.AddTribeLead).Methods("POST") // Assign Lead
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/leads", tribeHandler.RemoveTribeLead).Methods("DELETE") // Remove Lead
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST") //Assign user to tribe
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE") //Remove user from tribe
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET") // Get tribe by tribe id
+	
 
-	//Assign user to tribe
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.AssignUser).Methods("POST")
-	//Remove user from tribe
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.RemoveAssign).Methods("DELETE")
-	//get tribe by id
-	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")
-	s.HandleFunc("/api/tribes/user", tribeHandler.GetTribeByUserID).Methods("GET")
-
-	// TODO Get tribe keys
+	// TODO: Get tribe keys
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/keys").Methods("GET")
-	// TODO Get tribe users
+	// TODO: Get tribe users
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/users").Methods("GET")
 
-	//Get All keys
-	// TODO: ADD FILTER
-	// TODO: FILTER BY tribe, version, key_type, platform, status
-	s.HandleFunc("/api/keys", keyHandler.GetKeysHandler).Methods("GET")
-
-	//Create New key
-	s.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")
-
-	//Delete Key by ID
-	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE")
-
-	//Get Key by ID
-	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")
-
-	//Update Key by ID
-	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.UpdateKeyByID).Methods("PUT")
-
-	//Assign Key Share
-	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.ShareKey).Methods("POST")
-
-	//Remove Key Share
-	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE")
+	// TODO: ADD FILTER, FILTER BY tribe, version, key_type, platform, status
+	s.HandleFunc("/api/keys", keyHandler.GetKeysHandler).Methods("GET") //Get All keys
+	s.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST") //Create New key
+	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE") //Delete Key by ID
+	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")	//Get Key by ID
+	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.UpdateKeyByID).Methods("PUT") //Update Key by ID
+	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.ShareKey).Methods("POST") //Assign Key Share
+	s.HandleFunc("/api/keys/{key_id:[0-9]+}/shares", keyHandler.RevokeShare).Methods("DELETE") //Remove Key Share
 
 	router.Use(helpers.LoggingMiddleware)
 	port := os.Getenv("PORT") //Get port from .env file, we did not specify any port so this should return an empty string when tested locally

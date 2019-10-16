@@ -278,28 +278,6 @@ func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
-// GetTribeByUserID get users tribe
-func (h *Handler) GetTribeByUserID(w http.ResponseWriter, r *http.Request) {
-	// Get User ID
-	uid, _, err := auth.ExtractTokenUID(r)
-	if err != nil {
-		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
-		return
-	}
-
-	var tribeAss []models.TribeAssign
-	var gotTribe = false
-	if row := h.DB.Table("tribe_assigns").Find(&tribeAss, uid).RowsAffected; row != 0 {
-		gotTribe = true
-	}
-
-	resp := map[string]interface{}{"status": gotTribe}
-	resp["tribeAssign"] = tribeAss
-	write, _ := json.Marshal(resp)
-	helpers.RenderJSON(w, write, http.StatusOK)
-}
-
-
 // TODO GET USER BY EMAIL
 
 // AssignUser assign user in tribe by lead
