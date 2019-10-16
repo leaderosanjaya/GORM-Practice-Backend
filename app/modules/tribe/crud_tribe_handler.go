@@ -271,10 +271,10 @@ func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
 		return
 	}
-	if role < 1 {
-		helpers.SendError(w, "super admin access only", http.StatusForbidden)
-		return
-	}
+	// if role < 1 {
+	// 	helpers.SendError(w, "super admin access only", http.StatusForbidden)
+	// 	return
+	// }
 
 	params := mux.Vars(r)
 	var tribe models.Tribe
