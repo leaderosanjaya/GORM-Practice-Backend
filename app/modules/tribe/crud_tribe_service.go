@@ -26,11 +26,11 @@ func (h *Handler) CreateTribe(tribe TribeCreate) error {
 	}
 
 	if tribe.LeadID != 0 {
-		var lead models.User
+		lead := models.User{}
 		if err := h.DB.First(&lead, tribe.LeadID); err.RowsAffected == 0 {
 			return errors.New("User lead does not exist, tribe created without lead.")
 		}
-		h.DB.Model(&tribe).Association("Leads").Append(models.TribeLeadAssign{LeadID: lead.ID, TribeID: newTribe.ID})
+		h.DB.Model(&newTribe).Association("Leads").Append(models.TribeLeadAssign{LeadID: lead.ID, TribeID: newTribe.ID})
 		h.DB.Model(&lead).Association("Tribes").Append(models.TribeAssign{UserID: lead.ID, TribeID: newTribe.ID})
 	}
 	return nil
