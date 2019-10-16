@@ -145,3 +145,52 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	h.DB.Save(&user)
 	helpers.SendOK(w, "Updated user")
 }
+
+// GetTribeByUser get users tribe
+func (h *Handler) GetTribeByUser(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	uid, _, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
+		return
+	}
+
+	var tribeAss []models.TribeAssign
+	var gotTribe = false
+	if row := h.DB.Table("tribe_assigns").Find(&tribeAss, uid).RowsAffected; row != 0 {
+		gotTribe = true
+	}
+
+	resp := map[string]interface{}{"status": gotTribe}
+	resp["tribeAssign"] = tribeAss
+	write, _ := json.Marshal(resp)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
+
+// GetTribeByUserID get users tribe
+func (h *Handler) GetTribeByUserID(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.SendError(w, "super admin access only", http.StatusForbidden)
+		return
+	}
+
+	params := mux.Vars(r)
+	var tribeAss []models.TribeAssign
+	var gotTribe = false
+
+
+	if row := h.DB.Table("tribe_assigns").Find(&tribeAss, params["user_id"]).RowsAffected; row != 0 {
+		gotTribe = true
+	}
+
+	resp := map[string]interface{}{"status": gotTribe}
+	resp["tribeAssign"] = tribeAss
+	write, _ := json.Marshal(resp)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
