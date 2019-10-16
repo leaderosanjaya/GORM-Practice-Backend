@@ -49,8 +49,18 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 		return nil
 	}
 
+	// Check if user is lead or not
+	var isLead = false
+	tla := TribeLeadAssign{}
+
+	if lead := h.DB.Table("tribe_lead_assigns").Where("lead_id = ?", user.ID).First(&tla).RowsAffected; lead!=0 {
+		fmt.Println(lead)
+		isLead = true
+	}
+
 	resp := map[string]interface{}{"status": true, "message": "logged in"}
 	resp["token"] = tokenString
 	resp["user"] = user
+	resp["isLead"] = isLead
 	return resp
 }

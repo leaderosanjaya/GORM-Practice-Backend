@@ -37,7 +37,7 @@ func main() {
 	keyHandler := new(key.Handler)
 	authHandler := new(auth.Handler)
 	remoteConfigHandler := new(remoteconfig.Handler)
-	remoteConfigHandler.Init()
+	
 	//Pass DB to handler
 	userHandler.DB = db
 	tribeHandler.DB = db
@@ -55,6 +55,8 @@ func main() {
 	db.Model(&models.TribeAssign{}).AddForeignKey("user_id", "users(user_id)", "CASCADE", "CASCADE")
 	db.Model(&models.TribeAssign{}).AddForeignKey("tribe_id", "tribes(tribe_id)", "CASCADE", "CASCADE")
 
+	remoteConfigHandler.Init()
+	
 	//New Router
 	router := mux.NewRouter()
 

@@ -1,6 +1,9 @@
 package remoteconfig
 
 import (
+	"github.com/GORM-practice/app/models"
+	"io/ioutil"
+	"log"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -57,6 +60,69 @@ func (h *Handler) GetToken() error {
 	return nil
 }
 
+
+// GetBody return body string and error
+func (h *Handler) GetBody() error {
+	//Set up new Client HTTP
+	client := &http.Client{}
+
+	req, err := http.NewRequest(http.MethodGet, h.RemoteConfigURL, nil)
+	if err != nil {
+		return err
+	}
+
+	// Set Authorization Header
+	req.Header.Set("Authorization", "Bearer "+h.Token.AccessToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	// if resp.Status is 200
+	if resp.StatusCode == http.StatusOK {
+		fmt.Println("Successfully retrieved latest config")
+		// Read response body
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+
+		// Write the response body into config.json
+		_ = ioutil.WriteFile("config.json", bodyBytes, 0644)
+		return nil
+	}
+	return fmt.Errorf("Bad Response E-Tag: %d", resp.StatusCode)
+}
+
+// PushToDB init db with existing data in firebase
+func (h *Handler) PushToDB() error {
+	var config Config
+
+	jsonFile, _ := os.Open(os.Getenv("configFile"))
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	
+	err := json.Unmarshal(byteValue, &config)
+	if err != nil {
+		return err
+	}
+
+	for k, v := range config.Parameters {
+		key := models.Key{}
+
+		key.KeyName = k
+		key.KeyValue = v.DefaultValue.Value
+		key.Description = v.Description
+		key.Status = "unregistered"
+	
+
+
+		h.DB.Table("keys").Create(&key)
+	}
+
+	return nil
+}
+
+
 // Init to init remote config
 func (h *Handler) Init() error {
 	h.CredentialsFile = os.Getenv("GOOGLE_CREDENTIALS")
@@ -66,10 +132,19 @@ func (h *Handler) Init() error {
 	remoteConfigEndpoint := fmt.Sprintf("v1/projects/%s/remoteConfig", h.ProjectID)
 	h.RemoteConfigURL = fmt.Sprintf("%s/%s", baseURL, remoteConfigEndpoint)
 
-	err := h.GetToken()
-	if err != nil {
+	
+	if err := h.GetToken(); err != nil {
 		return err
 	}
+
+	if err := h.GetBody(); err != nil {
+		return err
+	}
+
+	if err := h.PushToDB(); err != nil {
+		return err
+	}
+
 	fmt.Println("Remote Config Init Successful")
 	return nil
 }
