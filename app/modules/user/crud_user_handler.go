@@ -108,3 +108,40 @@ func (h *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	write, _ := json.Marshal(&user)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
+
+// IMPROVE
+func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var user models.User
+	h.DB.First(&user, params["user_id"])
+
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+
+	if role < 1 && uint64(user.ID) != uid { // Get user own key
+		helpers.SendError(w, "You are not authorized for this request", http.StatusUnauthorized)
+		return
+	}
+
+	//read edit info
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("[crud_user_handler.go][UpdateUserByID][ReadBody]: %s\n", err)
+		helpers.SendError(w, "Error when updating user", http.StatusBadRequest)
+		return
+	}
+
+	updateUser := models.User{}
+	if err = json.Unmarshal(body, &updateUser); err != nil {
+		fmt.Printf("[crud_user_handler.go][UpdateUserByID][UnmarshalJSON]: %s\n", err)
+		helpers.SendError(w, "Error when updating user", http.StatusBadRequest)
+		return
+	}
+
+	UpdateValue(&updateUser, &user)
+	h.DB.Save(&user)
+	helpers.SendOK(w, "Updated user")
+}

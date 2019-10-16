@@ -50,9 +50,9 @@ func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 	key.UserID = uint(uid)
 
-	var user models.TribeAssign
-	h.DB.Where("user_id = ?", uint(uid)).First(&user)
-	key.TribeID = user.TribeID
+	// var user models.TribeAssign
+	// h.DB.Where("user_id = ?", uint(uid)).First(&user)
+	// key.TribeID = user.TribeID
 
 	if err = h.CreateKey(key); err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][CreateKey]: %s\n", err)

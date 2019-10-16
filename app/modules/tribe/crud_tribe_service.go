@@ -7,19 +7,32 @@ import (
 )
 
 // CreateTribe create tribe
-func (h *Handler) CreateTribe(tribe models.Tribe) error {
+func (h *Handler) CreateTribe(tribe TribeCreate) error {
+	// Migrate local tribe to gorm struct
+	newTribe := models.Tribe{}
+
+	newTribe.TribeName = tribe.TribeName
+	newTribe.Description = tribe.Description
+
 	//Get tribe lead id
 	//Insert tribe to lead user
-	var lead models.User
 
-	if err := h.DB.First(&lead, tribe.LeadID); err.RowsAffected == 0 {
-		return errors.New("calon lead does not exist")
+	if tribe.LeadID != 0 {
+		newTribe.TotalMember = 1
 	}
 
-	if dbc := h.DB.Create(&tribe); dbc.Error != nil {
+	if dbc := h.DB.Create(&newTribe); dbc.Error != nil {
 		return dbc.Error
 	}
-	h.DB.Model(&lead).Association("Tribes").Append(models.TribeAssign{UserID: lead.ID, TribeID: tribe.ID})
+
+	if tribe.LeadID != 0 {
+		var lead models.User
+		if err := h.DB.First(&lead, tribe.LeadID); err.RowsAffected == 0 {
+			return errors.New("User lead does not exist, tribe created without lead.")
+		}
+		h.DB.Model(&tribe).Association("Leads").Append(models.TribeLeadAssign{LeadID: lead.ID, TribeID: newTribe.ID})
+		h.DB.Model(&lead).Association("Tribes").Append(models.TribeAssign{UserID: lead.ID, TribeID: newTribe.ID})
+	}
 	return nil
 }
 
@@ -29,4 +42,13 @@ func (h *Handler) DeleteTribe(targetID uint) error {
 		return errors.New("tribe does not exist")
 	}
 	return nil
+}
+
+func UpdateValue(updateTribe *models.Tribe, tribe *models.Tribe) {
+	if updateTribe.TribeName != "" {
+		tribe.TribeName = updateTribe.TribeName
+	}
+	if updateTribe.Description != "" {
+		tribe.Description = updateTribe.Description
+	}
 }
