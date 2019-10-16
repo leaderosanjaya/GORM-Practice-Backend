@@ -18,9 +18,9 @@ type Assign struct {
 	PlatformID uint `json:"platform"`
 }
 
-// TribeCreate struct object
-type TribeCreate struct {
+// tCreate struct object
+type tCreate struct {
 	TribeName   string `json:"tribe_name"`
-	LeadID      uint   `json:"lead_id"`
+	LeadID      uint  `json:"lead_id"`
 	Description string `json:"description"`
 }

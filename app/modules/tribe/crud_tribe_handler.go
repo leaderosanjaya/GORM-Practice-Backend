@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// UintInSlice uint in slice
 func UintInSlice(leads []models.TribeLeadAssign, targetUint uint64) bool {
 	for _, lead := range leads {
 		if uint64(lead.TribeID) == targetUint {
@@ -42,7 +43,7 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tribe := TribeCreate{}
+	tribe := tCreate{}
 	if err = json.Unmarshal(body, &tribe); err != nil {
 		fmt.Printf("[crud_tribe_handler.go][CreateTribeHandler][UnmarshalJSON]: %s\n", err)
 		helpers.SendError(w, "error creating tribe", http.StatusBadRequest)
@@ -99,7 +100,7 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// IMPROVE
+// UpdateTribeByID IMPROVE
 func (h *Handler) UpdateTribeByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var tribe models.Tribe
@@ -136,7 +137,7 @@ func (h *Handler) UpdateTribeByID(w http.ResponseWriter, r *http.Request) {
 	helpers.SendOK(w, "Updated tribe")
 }
 
-//IMPROVE
+//AddTribeLead IMPROVE
 func (h *Handler) AddTribeLead(w http.ResponseWriter, r *http.Request) {
 	//Superadmin handling
 	_, role, err := auth.ExtractTokenUID(r)
@@ -193,7 +194,7 @@ func (h *Handler) AddTribeLead(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//IMPROVE
+//RemoveTribeLead IMPROVE
 func (h *Handler) RemoveTribeLead(w http.ResponseWriter, r *http.Request) {
 	//Superadmin handling
 	_, role, err := auth.ExtractTokenUID(r)
@@ -277,7 +278,30 @@ func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
+// GetTribeByUserID get users tribe
+func (h *Handler) GetTribeByUserID(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	uid, _, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
+		return
+	}
+
+	var tribeAss []models.TribeAssign
+	var gotTribe = false
+	if row := h.DB.Table("tribe_assigns").Find(&tribeAss, uid).RowsAffected; row != 0 {
+		gotTribe = true
+	}
+
+	resp := map[string]interface{}{"status": gotTribe}
+	resp["tribeAssign"] = tribeAss
+	write, _ := json.Marshal(resp)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
+
+
 // TODO GET USER BY EMAIL
+
 // AssignUser assign user in tribe by lead
 func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
 
