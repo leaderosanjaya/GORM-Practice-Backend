@@ -12,7 +12,7 @@ type User struct {
 	Email     string    `json:"email" gorm:"type:varchar(50);unique;not null"`
 	Password  string    `json:"-" gorm:"type:varchar(255);not null"`
 	Role      int       `json:"role" gorm:"default:0"`
-	// Platform   int           `json:"platform" gorm:"default:0"`
+	Platform   int           `json:"platform" gorm:"default:0"`
 	Keys       []Key         `json:"keys" gorm:"foreignkey:UserID"`
 	Tribes     []TribeAssign `json:"tribes"`
 	SharedKeys []KeyShares   `json:"shared_keys"`

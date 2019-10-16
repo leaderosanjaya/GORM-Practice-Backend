@@ -29,3 +29,9 @@ type Credential struct {
 type Claims struct {
 	jwt.StandardClaims
 }
+
+// TribeLeadAssign user lead
+type TribeLeadAssign struct {
+	LeadID  uint `gorm:"primary_key"`
+	TribeID uint `gorm:"primary_key"`
+}
