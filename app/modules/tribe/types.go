@@ -2,12 +2,12 @@ package tribe
 
 import "github.com/jinzhu/gorm"
 
-// Handler struct objet
+// Handler struct object
 type Handler struct {
 	DB *gorm.DB
 }
 
-// Del Struct objet
+// Del Struct object
 type Del struct {
 	UID uint `json:"uid"`
 }
@@ -16,4 +16,11 @@ type Del struct {
 type Assign struct {
 	UID uint `json:"user_id"`
 	PlatformID uint `json:"platform"`
+}
+
+// TribeCreate struct object
+type TribeCreate struct {
+	TribeName   string `json:"tribe_name"`
+	LeadID      uint   `json:"lead_id"`
+	Description string `json:"description"`
 }

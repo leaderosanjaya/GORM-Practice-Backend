@@ -27,3 +27,16 @@ func (h *Handler) DeleteUser(targetID uint) error {
 	}
 	return nil
 }
+
+func UpdateValue(updateUser *models.User, user *models.User) {
+	if updateUser.FirstName != "" {
+		user.FirstName = updateUser.FirstName
+	}
+	if updateUser.LastName != "" {
+		user.LastName = updateUser.LastName
+	}
+	if updateUser.Email != "" {
+		user.Email = updateUser.Email
+	}
+	// IMPROVE: add password change for user
+}
