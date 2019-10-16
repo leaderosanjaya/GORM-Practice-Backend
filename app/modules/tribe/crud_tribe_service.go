@@ -7,7 +7,7 @@ import (
 )
 
 // CreateTribe create tribe
-func (h *Handler) CreateTribe(tribe TribeCreate) error {
+func (h *Handler) CreateTribe(tribe tCreate) error {
 	// Migrate local tribe to gorm struct
 	newTribe := models.Tribe{}
 
@@ -28,7 +28,7 @@ func (h *Handler) CreateTribe(tribe TribeCreate) error {
 	if tribe.LeadID != 0 {
 		lead := models.User{}
 		if err := h.DB.First(&lead, tribe.LeadID); err.RowsAffected == 0 {
-			return errors.New("User lead does not exist, tribe created without lead.")
+			return errors.New("user lead does not exist, tribe created without lead")
 		}
 		h.DB.Model(&newTribe).Association("Leads").Append(models.TribeLeadAssign{LeadID: lead.ID, TribeID: newTribe.ID})
 		h.DB.Model(&lead).Association("Tribes").Append(models.TribeAssign{UserID: lead.ID, TribeID: newTribe.ID})
@@ -44,6 +44,7 @@ func (h *Handler) DeleteTribe(targetID uint) error {
 	return nil
 }
 
+// UpdateValue update tribe value
 func UpdateValue(updateTribe *models.Tribe, tribe *models.Tribe) {
 	if updateTribe.TribeName != "" {
 		tribe.TribeName = updateTribe.TribeName
