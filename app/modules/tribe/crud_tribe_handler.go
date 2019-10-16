@@ -266,15 +266,15 @@ func (h *Handler) RemoveTribeLead(w http.ResponseWriter, r *http.Request) {
 // GetTribeByID get tribe by id
 func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
-	_, role, err := auth.ExtractTokenUID(r)
-	if err != nil {
-		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
-		return
-	}
-	if role < 1 {
-		helpers.SendError(w, "super admin access only", http.StatusForbidden)
-		return
-	}
+	// _, role, err := auth.ExtractTokenUID(r)
+	// if err != nil {
+	// 	helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
+	// 	return
+	// }
+	// if role < 1 {
+	// 	helpers.SendError(w, "super admin access only", http.StatusForbidden)
+	// 	return
+	// }
 
 	params := mux.Vars(r)
 	var tribe models.Tribe
@@ -420,5 +420,24 @@ func (h *Handler) GetUserByTribeID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	write, _ := json.Marshal(&users)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
+
+// GetAllTribes returns all tribe
+func (h *Handler) GetAllTribes(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
+		return
+	}
+
+	var tribes []models.Tribe
+	h.DB.Preload("Members").Preload("Leads").Preload("Keys").Order("tribe_id desc").Find(&tribes)
+	write, _ := json.Marshal(&tribes)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }

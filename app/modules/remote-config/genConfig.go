@@ -10,7 +10,7 @@ import (
 // GetKeyData get key data, return slice of key and error
 func (h *Handler) GetKeyData() ([]models.Key, error) {
 	var keys []models.Key
-	if dbc := h.DB.Where("status = ?", "active").Find(&keys); dbc.Error != nil {
+	if dbc := h.DB.Where("status != ?", "inactive").Find(&keys); dbc.Error != nil {
 		return keys, dbc.Error
 	}
 	return keys, nil

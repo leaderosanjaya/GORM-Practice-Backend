@@ -1,12 +1,12 @@
 package key
 
 import (
-	"strings"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/GORM-practice/app/helpers"
 	"github.com/GORM-practice/app/models"
@@ -19,7 +19,7 @@ import (
 
 // CreateKeyHandler create key
 func (h *Handler) CreateKeyHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("[crud_key_handler.go][CreateKeyHandler][ReadBody]: %s\n", err)
@@ -360,6 +360,28 @@ func (h *Handler) GetKeysHandler(w http.ResponseWriter, r *http.Request) {
 	var keys []models.Key
 	//IF USER IS SUPERADMIN, GET ALL
 	h.DB.Preload("Shares").Where("status = ?", "active").Order("created_at desc").Find(&keys)
+	//IF USER IS NORMAL USER, GET ALLOWED (to be updated)
+
+	write, _ := json.Marshal(&keys)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
+
+// GetUnregisteredKeys returns all keys
+func (h *Handler) GetUnregisteredKeys(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
+		return
+	}
+	//ADD FILTER, //ADD PAGINATION
+	var keys []models.Key
+	//IF USER IS SUPERADMIN, GET ALL
+	h.DB.Preload("Shares").Where("status = ?", "unregistered").Order("created_at desc").Find(&keys)
 	//IF USER IS NORMAL USER, GET ALLOWED (to be updated)
 
 	write, _ := json.Marshal(&keys)

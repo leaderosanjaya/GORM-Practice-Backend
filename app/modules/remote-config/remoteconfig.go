@@ -1,13 +1,15 @@
 package remoteconfig
 
 import (
-	"github.com/GORM-practice/app/models"
-	"io/ioutil"
-	"log"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+
+	"github.com/GORM-practice/app/models"
+	"github.com/jinzhu/gorm"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -60,7 +62,6 @@ func (h *Handler) GetToken() error {
 	return nil
 }
 
-
 // GetBody return body string and error
 func (h *Handler) GetBody() error {
 	//Set up new Client HTTP
@@ -100,7 +101,7 @@ func (h *Handler) PushToDB() error {
 
 	jsonFile, _ := os.Open(os.Getenv("configFile"))
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	
+
 	err := json.Unmarshal(byteValue, &config)
 	if err != nil {
 		return err
@@ -108,20 +109,20 @@ func (h *Handler) PushToDB() error {
 
 	for k, v := range config.Parameters {
 		key := models.Key{}
+		if err := h.DB.Where("key_name = ?", k).First(&key).Error; gorm.IsRecordNotFoundError(err) {
+			key.KeyName = k
+			key.KeyValue = v.DefaultValue.Value
+			key.Description = v.Description
+			key.Status = "unregistered"
 
-		key.KeyName = k
-		key.KeyValue = v.DefaultValue.Value
-		key.Description = v.Description
-		key.Status = "unregistered"
-	
+			fmt.Printf("[REMOTE CONFIG INIT] Added key %s to database as unregistered\n", k)
 
-
-		h.DB.Table("keys").Create(&key)
+			h.DB.Table("keys").Create(&key)
+		}
 	}
 
 	return nil
 }
-
 
 // Init to init remote config
 func (h *Handler) Init() error {
@@ -132,7 +133,6 @@ func (h *Handler) Init() error {
 	remoteConfigEndpoint := fmt.Sprintf("v1/projects/%s/remoteConfig", h.ProjectID)
 	h.RemoteConfigURL = fmt.Sprintf("%s/%s", baseURL, remoteConfigEndpoint)
 
-	
 	if err := h.GetToken(); err != nil {
 		return err
 	}

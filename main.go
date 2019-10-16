@@ -87,6 +87,7 @@ func main() {
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET") // Get keys from tribe ID // TODO: implement filter
 
 	s.HandleFunc("/api/tribes", tribeHandler.CreateTribeHandler).Methods("POST")                     //Create Tribe
+	s.HandleFunc("/api/tribes", tribeHandler.GetAllTribes).Methods("GET")                            //Get Tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.DeleteTribeHandler).Methods("DELETE") //Delete Tribe
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.UpdateTribeByID).Methods("PUT")       //Update Tribe
 	// TODO: implement this
@@ -108,6 +109,7 @@ func main() {
 	// TODO: ADD FILTER, FILTER BY tribe, version, key_type, platform, status
 	s.HandleFunc("/api/keys", keyHandler.GetKeysHandler).Methods("GET")                        //Get All keys
 	s.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")                     //Create New key
+	s.HandleFunc("/api/keys/unregistered", keyHandler.GetUnregisteredKeys).Methods("GET")      //Create New key
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE")   //Delete Key by ID
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")            //Get Key by ID
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.UpdateKeyByID).Methods("PUT")         //Update Key by ID
