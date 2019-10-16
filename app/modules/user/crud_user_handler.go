@@ -161,10 +161,9 @@ func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	var users []models.User
 	h.DB.Preload("Keys").Preload("Tribes").Preload("SharedKeys").Where("role = ?", "0").Order("user_id desc").Find(&users)
 	write, _ := json.Marshal(&users)
-  helpers.RenderJSON(w, write, http.StatusOK)
+	helpers.RenderJSON(w, write, http.StatusOK)
 }
-  
-  
+
 // GetTribeByUser get users tribe
 func (h *Handler) GetTribeByUser(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
@@ -202,7 +201,6 @@ func (h *Handler) GetTribeByUserID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var tribeAss []models.TribeAssign
 	var gotTribe = false
-
 
 	if row := h.DB.Table("tribe_assigns").Find(&tribeAss, params["user_id"]).RowsAffected; row != 0 {
 		gotTribe = true
