@@ -58,13 +58,18 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err = h.CreateTribe(tribe); err != nil {
+	tribeID, err := h.CreateTribe(tribe)
+	if err != nil {
 		fmt.Printf("[crud_tribe_handler.go][CreateTribeHandler][InsertTribe]: %s\n", err)
 		helpers.SendError(w, "error creating tribe", http.StatusBadRequest)
 		return
 	}
 
-	helpers.SendOK(w, "tribe created")
+	// helpers.SendOK(w, "tribe created")
+	resp := map[string]interface{}{"status": true, "message": "create tribe success"}
+	resp["tribe_id"] = tribeID
+	write, _ := json.Marshal(resp)
+	helpers.RenderJSON(w, write, http.StatusOK)
 	return
 }
 
