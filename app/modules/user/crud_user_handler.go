@@ -145,3 +145,21 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 	h.DB.Save(&user)
 	helpers.SendOK(w, "Updated user")
 }
+
+func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
+		return
+	}
+
+	var users []models.User
+	h.DB.Preload("Keys").Preload("Tribes").Preload("SharedKeys").Where("role = ?", "0").Order("user_id desc").Find(&users)
+	write, _ := json.Marshal(&users)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}

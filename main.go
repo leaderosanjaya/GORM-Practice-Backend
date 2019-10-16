@@ -37,7 +37,7 @@ func main() {
 	keyHandler := new(key.Handler)
 	authHandler := new(auth.Handler)
 	remoteConfigHandler := new(remoteconfig.Handler)
-	
+
 	//Pass DB to handler
 	userHandler.DB = db
 	tribeHandler.DB = db
@@ -56,7 +56,7 @@ func main() {
 	db.Model(&models.TribeAssign{}).AddForeignKey("tribe_id", "tribes(tribe_id)", "CASCADE", "CASCADE")
 
 	remoteConfigHandler.Init()
-	
+
 	//New Router
 	router := mux.NewRouter()
 
@@ -84,6 +84,9 @@ func main() {
 
 	// Delete User
 	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")
+
+	//Get All User
+	s.HandleFunc("/api/users", userHandler.GetAllUsers).Methods("GET")
 
 	//Get user By ID
 	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")
