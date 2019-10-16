@@ -266,11 +266,11 @@ func (h *Handler) RemoveTribeLead(w http.ResponseWriter, r *http.Request) {
 // GetTribeByID get tribe by id
 func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
-	_, role, err := auth.ExtractTokenUID(r)
-	if err != nil {
-		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
-		return
-	}
+	// _, role, err := auth.ExtractTokenUID(r)
+	// if err != nil {
+	// 	helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
+	// 	return
+	// }
 	// if role < 1 {
 	// 	helpers.SendError(w, "super admin access only", http.StatusForbidden)
 	// 	return
