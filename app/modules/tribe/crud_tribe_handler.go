@@ -487,3 +487,40 @@ func (h *Handler) GetAllTribes(w http.ResponseWriter, r *http.Request) {
 	write, _ := json.Marshal(&tribes)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
+
+// GetUserNotLeadByTribeID returns user list that is not lead in the specified tribe
+func (h *Handler)GetUserNotLeadByTribeID(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
+		return
+	}
+
+	var tribe models.Tribe
+	if row := h.DB.First(&tribe, params["tribe_id"]).RowsAffected; row == 0 {
+		helpers.SendError(w, "tribe does not exist", http.StatusBadRequest)
+		return
+	}
+
+	var tla []models.TribeLeadAssign
+	h.DB.Where("tribe_id = ?", params["tribe_id"]).Find(&tla)
+
+	var leadsID []uint
+	for _, v := range tla {
+		leadsID = append(leadsID, v.LeadID)
+	}
+
+	var users []models.User
+	h.DB.Not(leadsID).Find(&users, "role != ?", 1)
+	
+	write, _ := json.Marshal(&users)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
