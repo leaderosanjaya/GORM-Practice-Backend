@@ -406,9 +406,8 @@ func (h *Handler) GetUserByTribeID(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	var tribe models.Tribe
-	h.DB.Preload("Members").Preload("Tribes").Find(&tribe, params["tribe_id"])
+	h.DB.Preload("Members").Find(&tribe, params["tribe_id"])
 
-	
 	if role < 1 && UintInSlice(tribe.Leads, uid) {
 		helpers.SendError(w, "tribe lead or super admin access only", http.StatusForbidden)
 		return
@@ -438,17 +437,16 @@ func (h *Handler) GetLeadByTribeID(w http.ResponseWriter, r *http.Request) {
 		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
 		return
 	}
- 
+
 	params := mux.Vars(r)
 	var tribe []models.TribeLeadAssign
 	h.DB.Where("tribe_id = ? ", params["tribe_id"]).Find(&tribe)
 
-	
 	if role < 1 {
 		helpers.SendError(w, "super admin access only", http.StatusForbidden)
 		return
 	}
-	
+
 	var leadIDs []uint
 	for _, lead := range tribe {
 		leadIDs = append(leadIDs, lead.LeadID)
@@ -464,7 +462,6 @@ func (h *Handler) GetLeadByTribeID(w http.ResponseWriter, r *http.Request) {
 	write, _ := json.Marshal(&leads)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
-
 
 // GetAllTribes returns all tribe
 func (h *Handler) GetAllTribes(w http.ResponseWriter, r *http.Request) {
@@ -486,7 +483,7 @@ func (h *Handler) GetAllTribes(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetUserNotLeadByTribeID returns user list that is not lead in the specified tribe
-func (h *Handler)GetUserNotLeadByTribeID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetUserNotLeadByTribeID(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 
@@ -517,7 +514,7 @@ func (h *Handler)GetUserNotLeadByTribeID(w http.ResponseWriter, r *http.Request)
 
 	var users []models.User
 	h.DB.Not(leadsID).Find(&users, "role != ?", 1)
-	
+
 	write, _ := json.Marshal(&users)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
