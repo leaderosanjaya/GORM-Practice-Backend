@@ -444,8 +444,8 @@ func (h *Handler) GetLeadByTribeID(w http.ResponseWriter, r *http.Request) {
 	h.DB.Where("tribe_id = ? ", params["tribe_id"]).Find(&tribe)
 
 	
-	if role < 1 && UintInSlice(tribe, uid) {
-		helpers.SendError(w, "tribe lead or super admin access only", http.StatusForbidden)
+	if role < 1 {
+		helpers.SendError(w, "super admin access only", http.StatusForbidden)
 		return
 	}
 	
