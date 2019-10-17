@@ -433,19 +433,19 @@ func (h *Handler) GetUserByTribeID(w http.ResponseWriter, r *http.Request) {
 // GetLeadByTribeID returns as it says
 func (h *Handler) GetLeadByTribeID(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
-	uid, role, err := auth.ExtractTokenUID(r)
+	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
 		return
 	}
-
+ 
 	params := mux.Vars(r)
 	var tribe []models.TribeLeadAssign
 	h.DB.Where("tribe_id = ? ", params["tribe_id"]).Find(&tribe)
 
 	
-	if role < 1 && UintInSlice(tribe, uid) {
-		helpers.SendError(w, "tribe lead or super admin access only", http.StatusForbidden)
+	if role < 1 {
+		helpers.SendError(w, "super admin access only", http.StatusForbidden)
 		return
 	}
 	
@@ -482,5 +482,42 @@ func (h *Handler) GetAllTribes(w http.ResponseWriter, r *http.Request) {
 	var tribes []models.Tribe
 	h.DB.Preload("Members").Preload("Leads").Preload("Keys").Order("tribe_id desc").Find(&tribes)
 	write, _ := json.Marshal(&tribes)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
+
+// GetUserNotLeadByTribeID returns user list that is not lead in the specified tribe
+func (h *Handler)GetUserNotLeadByTribeID(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+
+	// Get User ID
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
+		return
+	}
+
+	var tribe models.Tribe
+	if row := h.DB.First(&tribe, params["tribe_id"]).RowsAffected; row == 0 {
+		helpers.SendError(w, "tribe does not exist", http.StatusBadRequest)
+		return
+	}
+
+	var tla []models.TribeLeadAssign
+	h.DB.Where("tribe_id = ?", params["tribe_id"]).Find(&tla)
+
+	var leadsID []uint
+	for _, v := range tla {
+		leadsID = append(leadsID, v.LeadID)
+	}
+
+	var users []models.User
+	h.DB.Not(leadsID).Find(&users, "role != ?", 1)
+	
+	write, _ := json.Marshal(&users)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
