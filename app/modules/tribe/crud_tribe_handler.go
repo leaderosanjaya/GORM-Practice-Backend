@@ -433,12 +433,12 @@ func (h *Handler) GetUserByTribeID(w http.ResponseWriter, r *http.Request) {
 // GetLeadByTribeID returns as it says
 func (h *Handler) GetLeadByTribeID(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
-	uid, role, err := auth.ExtractTokenUID(r)
+	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
 		return
 	}
-
+ 
 	params := mux.Vars(r)
 	var tribe []models.TribeLeadAssign
 	h.DB.Where("tribe_id = ? ", params["tribe_id"]).Find(&tribe)
