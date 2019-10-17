@@ -29,7 +29,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 	}
 
 	// JWT
-	expiresAt := time.Now().Add(time.Minute * 10).Unix()
+	expiresAt := time.Now().Add(time.Minute * 3).Unix()
 
 	tk := &Token{
 		UserID: user.ID,
@@ -54,7 +54,6 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 	tla := TribeLeadAssign{}
 
 	if lead := h.DB.Table("tribe_lead_assigns").Where("lead_id = ?", user.ID).First(&tla).RowsAffected; lead!=0 {
-		fmt.Println(lead)
 		isLead = true
 	}
 

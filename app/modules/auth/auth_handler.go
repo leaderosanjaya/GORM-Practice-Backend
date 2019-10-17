@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -47,14 +46,7 @@ func JwtVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		_, err = jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("SECRET_KEY")), nil
-		})
-		if err != nil {
-			log.Println(err)
-			helpers.SendError(w, "error: no auth token found, or your auth token is false", http.StatusUnauthorized)
-			return
-		}
+		refreshToken(w, r)
 
 		ctx := context.WithValue(r.Context(), user, tk)
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -95,8 +87,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 // ExtractToken to extract token from http request header
 func ExtractToken(r *http.Request) string {
 	if cookieToken := r.Header.Get("Cookie"); cookieToken!="" {
-		tokenString := strings.Split(cookieToken, "=")[1]
-		return tokenString
+		return strings.Split(cookieToken, "=")[1]
 	}
 	return ""
 }
@@ -154,4 +145,56 @@ func (h *Handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.SendOK(w, "token is valid")
+}
+
+// refreshToken to refresh token each time jwt Verify
+func refreshToken(w http.ResponseWriter, r *http.Request) {
+	oldToken := ExtractToken(r)
+	if oldToken == "" {
+		helpers.SendError(w, "request has no authorization token", http.StatusUnauthorized)
+		return
+	}
+
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(oldToken, claims, func(token *jwt.Token) (interface{}, error) {
+		return os.Getenv("SECRET_KEY"), nil
+	})
+
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			helpers.SendError(w, "invalid signature token", http.StatusUnauthorized)
+			return
+		}
+		helpers.SendError(w, "failed parsing claims", http.StatusBadRequest)
+		return
+	}
+
+	if !token.Valid{
+		helpers.SendError(w, "token invalid", http.StatusUnauthorized)
+		return
+	}
+
+	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) <= 1*time.Minute {
+		expiresAt := time.Now().Add(3 * time.Minute)
+		claims.ExpiresAt = expiresAt.Unix()
+		newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		if err != nil {
+			helpers.SendError(w, "failed to refresh token", http.StatusInternalServerError)
+			return
+		}
+
+		newTokenString, err := newToken.SignedString(os.Getenv("SECRET_KEY"))
+		if err != nil {
+			helpers.SendError(w, "failed to refresh token", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name: "token",
+			Value: newTokenString,
+			Expires: expiresAt,
+			Path: "/",
+		})
+	}
+	return
 }
