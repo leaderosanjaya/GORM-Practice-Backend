@@ -76,12 +76,13 @@ func main() {
 	// IMPROVE: Get users by filter
 	// router.HandleFunc("/api/users", userHandler.GetUsers).Methods("GET")
 
-	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE") // Delete User
-	s.HandleFunc("/api/users", userHandler.GetAllUsers).Methods("GET")                           //Get All User
-	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")          //Get user By ID
-	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.UpdateUserByID).Methods("PUT")       //Update User
-	s.HandleFunc("/api/tribes/user/{user_id:[0-9]+}", userHandler.GetTribeByUserID)              // Get user affiliated tribes
-	s.HandleFunc("/api/tribes/user", userHandler.GetTribeByUser).Methods("GET")                  // Get tribe by userid(GET METHOD, depend on auth token)
+	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.DeleteUserHandler).Methods("DELETE")      // Delete User
+	s.HandleFunc("/api/users", userHandler.GetAllUsers).Methods("GET")                                //Get All User
+	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.GetUserByID).Methods("GET")               //Get user By ID
+	s.HandleFunc("/api/users/{user_id:[0-9]+}", userHandler.UpdateUserByID).Methods("PUT")            //Update User
+	s.HandleFunc("/api/users/{user_id:[0-9]+}/leads", userHandler.GetUserLeadingTribe).Methods("GET") //Get Tribe Where the user is lead
+	s.HandleFunc("/api/tribes/user/{user_id:[0-9]+}", userHandler.GetTribeByUserID)                   // Get user affiliated tribes
+	s.HandleFunc("/api/tribes/user", userHandler.GetTribeByUser).Methods("GET")                       // Get tribe by userid(GET METHOD, depend on auth token)
 
 	s.HandleFunc("/api/users/{user_id:[0-9]+}/keys", keyHandler.GetKeysByUserID).Methods("GET")    //Get user keys by ID // TODO: implement filter
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/keys", keyHandler.GetKeysByTribeID).Methods("GET") // Get keys from tribe ID // TODO: implement filter
