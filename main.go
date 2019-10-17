@@ -101,6 +101,7 @@ func main() {
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}", tribeHandler.GetTribeByID).Methods("GET")             // Get tribe by tribe id
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.GetUserByTribeID).Methods("GET")             // Get user by tribe id
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/leads", tribeHandler.GetLeadByTribeID).Methods("GET")             // Get lead by tribe id
+	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/users", tribeHandler.GetUserNotLeadByTribeID).Methods("GET")        // Get user not lead by tribe id
 	// TODO: Get tribe keys
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/keys").Methods("GET")
 	// TODO: Get tribe users
