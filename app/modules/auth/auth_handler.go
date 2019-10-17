@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"time"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -75,6 +76,17 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := h.FindOne(cred.Email, cred.Password)
+
+	tokenString := resp["token"].(string)
+	tokenExpiresAt := time.Unix(resp["expiresAt"].(int64), 0)
+
+	http.SetCookie(w, &http.Cookie{
+		Name: "token",
+		Value: tokenString,
+		Expires: tokenExpiresAt,
+		Path: "/",
+	})
+
 	message, _ := json.Marshal(resp)
 	helpers.RenderJSON(w, message, http.StatusOK)
 	// json.NewEncoder(w).Encode(resp)
@@ -82,17 +94,9 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 // ExtractToken to extract token from http request header
 func ExtractToken(r *http.Request) string {
-	keys := r.URL.Query()
-	token := keys.Get("token")
-	if token != "" {
-		return token
+	if cookieToken := r.Header.Get("Cookie"); cookieToken!="" {
+		return strings.Split(cookieToken, "=")[1]
 	}
-
-	bearerToken := r.Header.Get("Authorization")
-	if token = strings.Split(bearerToken, " ")[1]; token != "" {
-		return token
-	}
-
 	return ""
 }
 

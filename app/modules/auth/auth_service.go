@@ -62,5 +62,6 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 	resp["token"] = tokenString
 	resp["user"] = user
 	resp["isLead"] = isLead
+	resp["expiresAt"] = expiresAt
 	return resp
 }
