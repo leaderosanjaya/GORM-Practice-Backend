@@ -58,9 +58,8 @@ type KeyShares struct {
 
 // TribeAssign user association with tribe
 type TribeAssign struct {
-	UserID   uint `gorm:"primary_key"`
-	TribeID  uint `gorm:"primary_key"`
-	Platform uint `gorm:"not null; default:0"`
+	UserID  uint `gorm:"primary_key"`
+	TribeID uint `gorm:"primary_key"`
 }
 
 // TribeLeadAssign user lead
