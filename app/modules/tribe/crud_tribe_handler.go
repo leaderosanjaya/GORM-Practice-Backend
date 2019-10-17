@@ -398,14 +398,21 @@ func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 // GetUserByTribeID returns as it says
 func (h *Handler) GetUserByTribeID(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
-	_, _, err := auth.ExtractTokenUID(r)
+	uid, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
 		return
 	}
+
 	params := mux.Vars(r)
 	var tribe models.Tribe
 	h.DB.Preload("Members").Preload("Tribes").Find(&tribe, params["tribe_id"])
+
+	
+	if role < 1 && UintInSlice(tribe.Leads, uid) {
+		helpers.SendError(w, "tribe lead or super admin access only", http.StatusForbidden)
+		return
+	}
 
 	var userIDs []uint
 	for _, member := range tribe.Members {
@@ -422,6 +429,42 @@ func (h *Handler) GetUserByTribeID(w http.ResponseWriter, r *http.Request) {
 	write, _ := json.Marshal(&users)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
+
+// GetLeadByTribeID returns as it says
+func (h *Handler) GetLeadByTribeID(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	uid, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
+		return
+	}
+
+	params := mux.Vars(r)
+	var tribe []models.TribeLeadAssign
+	h.DB.Where("tribe_id = ? ", params["tribe_id"]).Find(&tribe)
+
+	
+	if role < 1 && UintInSlice(tribe, uid) {
+		helpers.SendError(w, "tribe lead or super admin access only", http.StatusForbidden)
+		return
+	}
+	
+	var leadIDs []uint
+	for _, lead := range tribe {
+		leadIDs = append(leadIDs, lead.LeadID)
+	}
+
+	var leads []models.User
+	for _, leadID := range leadIDs {
+		var lead models.User
+		h.DB.First(&lead, leadID)
+		leads = append(leads, lead)
+	}
+
+	write, _ := json.Marshal(&leads)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
+
 
 // GetAllTribes returns all tribe
 func (h *Handler) GetAllTribes(w http.ResponseWriter, r *http.Request) {
