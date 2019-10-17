@@ -62,6 +62,7 @@ func (h *Handler) GetToken() error {
 	return nil
 }
 
+// TODO: add conditions
 // GetBody return body string and error
 func (h *Handler) GetBody() error {
 	//Set up new Client HTTP
@@ -95,6 +96,7 @@ func (h *Handler) GetBody() error {
 	return fmt.Errorf("Bad Response E-Tag: %d", resp.StatusCode)
 }
 
+// TODO: add condition
 // PushToDB init db with existing data in firebase
 func (h *Handler) PushToDB() error {
 	var config Config
@@ -106,7 +108,20 @@ func (h *Handler) PushToDB() error {
 	if err != nil {
 		return err
 	}
+	for _, v := range config.Conditions {
+		condition := models.Condition{}
+		if err := h.DB.Where("condition_name = ?", v.Name).First(&condition).Error; gorm.IsRecordNotFoundError(err) {
+			condition.ConditionName = v.Name
+			condition.Expression = v.Expression
+			condition.TagColor = v.TagColor
 
+			fmt.Printf("[REMOTE CONFIG INIT] Added condition %s to database\n", v.Name)
+
+			h.DB.Table("conditions").Create(&condition)
+		}
+	}
+	// DROP ALL CONDITION RELATIONS HERE
+	h.DB.Delete(models.ConditionAssign{})
 	for k, v := range config.Parameters {
 		key := models.Key{}
 		if err := h.DB.Where("key_name = ?", k).First(&key).Error; gorm.IsRecordNotFoundError(err) {
@@ -118,6 +133,14 @@ func (h *Handler) PushToDB() error {
 			fmt.Printf("[REMOTE CONFIG INIT] Added key %s to database as unregistered\n", k)
 
 			h.DB.Table("keys").Create(&key)
+
+		}
+		//Make link towards the keys
+		for kk, vv := range v.ConditionalValues {
+			// Get Condition Object
+			condition := models.Condition{}
+			h.DB.Where("condition_name = ?", kk).First(&condition)
+			h.DB.Model(&key).Association("Conditions").Append(models.ConditionAssign{KeyID: key.ID, ConditionID: condition.ID, Value: vv.Value})
 		}
 	}
 
@@ -144,7 +167,6 @@ func (h *Handler) Init() error {
 	if err := h.PushToDB(); err != nil {
 		return err
 	}
-
 	fmt.Println("Remote Config Init Successful")
 	return nil
 }

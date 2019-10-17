@@ -179,6 +179,7 @@ func (h *Handler) GetUserLeadingTribe(w http.ResponseWriter, r *http.Request) {
 
 	var tribesAssign []models.TribeAssign
 	var tribes []models.Tribe
+	// IMPROVE
 	h.DB.Where("user_id = ?", params["user_id"]).Find(&tribesAssign)
 	for _, v := range tribesAssign {
 		var tribe models.Tribe

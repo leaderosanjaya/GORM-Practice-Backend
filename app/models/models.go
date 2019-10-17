@@ -34,20 +34,39 @@ type Tribe struct {
 
 // Key struct, key data model in DB
 type Key struct {
-	ID          uint        `json:"key_id" gorm:"primary_key;column:key_id"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
-	KeyName     string      `json:"key_name" gorm:"type:varchar(255);not null;unique"`
-	KeyValue    string      `json:"key_value" gorm:"type:text;not null"`
-	KeyType     string      `json:"key_type" gorm:"type:varchar(20);not null;default:'STRING'"`
-	Description string      `json:"description" gorm:"type:text;not null"`
-	Platform    string      `json:"platform" gorm:"type:varchar(50);not null"`
-	ExpireDate  time.Time   `json:"expire_date" gorm:"not null"`
-	UserID      uint        `json:"user_id" gorm:"not null"`
-	TribeID     uint        `json:"tribe_id" gorm:"not null"`
-	AppVersion  string      `json:"app_version" gorm:"type:varchar(20);not null"`
-	Status      string      `json:"status" gorm:"type:varchar(20);not null"`
-	Shares      []KeyShares `json:"shares"`
+	ID          uint              `json:"key_id" gorm:"primary_key;column:key_id"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
+	KeyName     string            `json:"key_name" gorm:"type:varchar(255);not null;unique"`
+	KeyValue    string            `json:"key_value" gorm:"type:text;not null"`
+	KeyType     string            `json:"key_type" gorm:"type:varchar(20);not null;default:'STRING'"`
+	Description string            `json:"description" gorm:"type:text;not null"`
+	Platform    string            `json:"platform" gorm:"type:varchar(50);not null"`
+	ExpireDate  time.Time         `json:"expire_date" gorm:"not null"`
+	UserID      uint              `json:"user_id" gorm:"not null"`
+	TribeID     uint              `json:"tribe_id" gorm:"not null"`
+	AppVersion  string            `json:"app_version" gorm:"type:varchar(20);not null"`
+	Status      string            `json:"status" gorm:"type:varchar(20);not null"`
+	Shares      []KeyShares       `json:"shares,omitempty"`
+	Conditions  []ConditionAssign `json:"conditions,omitempty"`
+}
+
+type ConditionAssign struct {
+	KeyID       uint   `gorm:"primary_key"`
+	ConditionID uint   `gorm:"primary_key"`
+	Value       string `json:"value" gorm:"type:text;"`
+}
+
+// TODO: ADD GORM
+// Condition struct, used to get all conditions
+type Condition struct {
+	ID            uint              `json:"-" gorm:"primary_key;column:condition_id"`
+	CreatedAt     time.Time         `json:"created_at"`
+	UpdatedAt     time.Time         `json:"-"`
+	ConditionName string            `json:"name" gorm:"type:varchar(255);not null;unique"`
+	Expression    string            `json:"expression" gorm:"type:text;not null"`
+	TagColor      string            `json:"tagColor" gorm:"type:varchar(30);not null;default:'TEAL'"`
+	AffectingKeys []ConditionAssign `json:"affectingKeys,omitempty"`
 }
 
 // KeyShares user association with key
