@@ -110,9 +110,9 @@ func main() {
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/users").Methods("GET")
 
 	// TODO: ADD FILTER, FILTER BY tribe, version, key_type, platform, status
+	s.Path("/api/keys").Queries("status", "{status}").HandlerFunc(keyHandler.GetKeysHandler).Methods("GET")
 	s.HandleFunc("/api/keys", keyHandler.GetKeysHandler).Methods("GET")                        //Get All keys
 	s.HandleFunc("/api/keys", keyHandler.CreateKeyHandler).Methods("POST")                     //Create New key
-	s.HandleFunc("/api/keys/unregistered", keyHandler.GetUnregisteredKeys).Methods("GET")      //Create New key
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.DeleteKeyHandler).Methods("DELETE")   //Delete Key by ID
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.GetKeyByID).Methods("GET")            //Get Key by ID
 	s.HandleFunc("/api/keys/{key_id:[0-9]+}", keyHandler.UpdateKeyByID).Methods("PUT")         //Update Key by ID

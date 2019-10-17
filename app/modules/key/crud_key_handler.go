@@ -346,6 +346,11 @@ func (h *Handler) RevokeShare(w http.ResponseWriter, r *http.Request) {
 
 // GetKeysHandler returns all keys
 func (h *Handler) GetKeysHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	status := "active"
+	if params["status"] != "" {
+		status = params["status"]
+	}
 	// Get User ID
 	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
@@ -359,29 +364,7 @@ func (h *Handler) GetKeysHandler(w http.ResponseWriter, r *http.Request) {
 	//ADD FILTER, //ADD PAGINATION
 	var keys []models.Key
 	//IF USER IS SUPERADMIN, GET ALL
-	h.DB.Preload("Shares").Preload("Conditions").Where("status = ?", "active").Order("created_at desc").Find(&keys)
-	//IF USER IS NORMAL USER, GET ALLOWED (to be updated)
-
-	write, _ := json.Marshal(&keys)
-	helpers.RenderJSON(w, write, http.StatusOK)
-}
-
-// GetUnregisteredKeys returns all keys
-func (h *Handler) GetUnregisteredKeys(w http.ResponseWriter, r *http.Request) {
-	// Get User ID
-	_, role, err := auth.ExtractTokenUID(r)
-	if err != nil {
-		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
-		return
-	}
-	if role < 1 {
-		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
-		return
-	}
-	//ADD FILTER, //ADD PAGINATION
-	var keys []models.Key
-	//IF USER IS SUPERADMIN, GET ALL
-	h.DB.Preload("Shares").Preload("Conditions").Where("status = ?", "unregistered").Order("created_at desc").Find(&keys)
+	h.DB.Preload("Shares").Preload("Conditions").Where("status = ?", status).Order("created_at desc").Find(&keys)
 	//IF USER IS NORMAL USER, GET ALLOWED (to be updated)
 
 	write, _ := json.Marshal(&keys)
