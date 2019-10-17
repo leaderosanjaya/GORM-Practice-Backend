@@ -283,7 +283,7 @@ func (h *Handler) GetTribeByID(w http.ResponseWriter, r *http.Request) {
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
-// TODO GET USER BY EMAIL
+// TODO: GET USER BY EMAIL
 
 // AssignUser assign user in tribe by lead
 func (h *Handler) AssignUser(w http.ResponseWriter, r *http.Request) {
