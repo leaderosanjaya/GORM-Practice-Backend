@@ -123,7 +123,7 @@ func (h *Handler) GetKeyByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row := h.DB.Preload("Shares").First(&key, params["key_id"]).RowsAffected
+	row := h.DB.Preload("Shares").Preload("Conditions").First(&key, params["key_id"]).RowsAffected
 	if row == 0 {
 		helpers.SendError(w, "Key does not exist", http.StatusBadRequest)
 		return
@@ -198,7 +198,7 @@ func (h *Handler) GetKeysByUserID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.DB.Preload("Shares").Where("user_id = ?", params["user_id"]).Find(&keys)
+	h.DB.Preload("Shares").Preload("Conditions").Where("user_id = ?", params["user_id"]).Find(&keys)
 
 	write, _ := json.Marshal(&keys)
 	helpers.RenderJSON(w, write, http.StatusOK)
@@ -240,7 +240,7 @@ func (h *Handler) GetKeysByTribeID(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.DB.Preload("Shares").Where("tribe_id = ?", params["tribe_id"]).Find(&keys)
+	h.DB.Preload("Shares").Preload("Conditions").Where("tribe_id = ?", params["tribe_id"]).Find(&keys)
 	write, _ := json.Marshal(&keys)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
@@ -359,7 +359,7 @@ func (h *Handler) GetKeysHandler(w http.ResponseWriter, r *http.Request) {
 	//ADD FILTER, //ADD PAGINATION
 	var keys []models.Key
 	//IF USER IS SUPERADMIN, GET ALL
-	h.DB.Preload("Shares").Where("status = ?", "active").Order("created_at desc").Find(&keys)
+	h.DB.Preload("Shares").Preload("Conditions").Where("status = ?", "active").Order("created_at desc").Find(&keys)
 	//IF USER IS NORMAL USER, GET ALLOWED (to be updated)
 
 	write, _ := json.Marshal(&keys)
@@ -381,7 +381,7 @@ func (h *Handler) GetUnregisteredKeys(w http.ResponseWriter, r *http.Request) {
 	//ADD FILTER, //ADD PAGINATION
 	var keys []models.Key
 	//IF USER IS SUPERADMIN, GET ALL
-	h.DB.Preload("Shares").Where("status = ?", "unregistered").Order("created_at desc").Find(&keys)
+	h.DB.Preload("Shares").Preload("Conditions").Where("status = ?", "unregistered").Order("created_at desc").Find(&keys)
 	//IF USER IS NORMAL USER, GET ALLOWED (to be updated)
 
 	write, _ := json.Marshal(&keys)

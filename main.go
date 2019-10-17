@@ -48,7 +48,7 @@ func main() {
 
 	// IMPROVE PUT IN SINGLE FUNCTION
 	//Update schema to models.go
-	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{}, &models.TribeLeadAssign{})
+	db.AutoMigrate(&models.User{}, &models.Tribe{}, &models.Key{}, &models.KeyShares{}, &models.TribeAssign{}, &models.TribeLeadAssign{}, &models.Condition{}, &models.ConditionAssign{})
 	db.Model(&models.KeyShares{}).AddForeignKey("user_id", "users(user_id)", "CASCADE", "CASCADE")
 	db.Model(&models.KeyShares{}).AddForeignKey("key_id", "keys(key_id)", "CASCADE", "CASCADE")
 
@@ -103,6 +103,7 @@ func main() {
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/members", tribeHandler.GetUserByTribeID).Methods("GET")             // Get user by tribe id
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/leads", tribeHandler.GetLeadByTribeID).Methods("GET")             // Get lead by tribe id
 	s.HandleFunc("/api/tribes/{tribe_id:[0-9]+}/users", tribeHandler.GetUserNotLeadByTribeID).Methods("GET")        // Get user not lead by tribe id
+
 	// TODO: Get tribe keys
 	// router.HandleFunc("/api/tribe/{tribe_id:[0-9]+}/keys").Methods("GET")
 	// TODO: Get tribe users

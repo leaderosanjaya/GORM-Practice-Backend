@@ -22,11 +22,24 @@ type DefaultValue struct {
 
 // Parameter default value defaultValue
 type Parameter struct {
-	DefaultValue DefaultValue `json:"defaultValue"`
-	Description  string       `json:"description"`
+	DefaultValue      DefaultValue            `json:"defaultValue"`
+	Description       string                  `json:"description"`
+	ConditionalValues map[string]Conditionals `json:"conditionalValues,omitempty"`
+}
+
+type Conditionals struct {
+	Value string `json:"value"`
+}
+
+// Condition struct
+type Condition struct {
+	Name       string `json:"name"`
+	Expression string `json:"expression"`
+	TagColor   string `json:"tagColor"`
 }
 
 // Config parameters
 type Config struct {
+	Conditions []Condition          `json:"conditions"`
 	Parameters map[string]Parameter `json:"parameters"`
 }
