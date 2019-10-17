@@ -24,14 +24,14 @@ const user key = "user"
 // JwtVerify Verify jwt token for every request
 func JwtVerify(next http.Handler) http.Handler {
 	return (http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var header = r.Header.Get("Authorization")
+		var header = r.Header.Get("Cookie")
 
 		if header == "" {
 			helpers.SendError(w, "Error: Found no token in header", http.StatusBadRequest)
 			return
 		}
 
-		headerSplit := strings.Split(header, " ")
+		headerSplit := strings.Split(header, "=")
 		if len(headerSplit) != 2 {
 			helpers.SendError(w, "Missing auth token", http.StatusBadRequest)
 			return
@@ -95,7 +95,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 // ExtractToken to extract token from http request header
 func ExtractToken(r *http.Request) string {
 	if cookieToken := r.Header.Get("Cookie"); cookieToken!="" {
-		return strings.Split(cookieToken, "=")[1]
+		tokenString := strings.Split(cookieToken, "=")[1]
+		return tokenString
 	}
 	return ""
 }
@@ -103,7 +104,6 @@ func ExtractToken(r *http.Request) string {
 // ExtractTokenUID extract token from request
 func ExtractTokenUID(r *http.Request) (uint64, int64, error) {
 	tokenString := ExtractToken(r)
-	fmt.Println(tokenString)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing error")
