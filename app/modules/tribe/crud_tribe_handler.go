@@ -1,6 +1,7 @@
 package tribe
 
 import (
+	"log"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +29,7 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
 	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
+		log.Println(err)
 		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
 		return
 	}
@@ -77,6 +79,7 @@ func (h *Handler) CreateTribeHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 	_, role, err := auth.ExtractTokenUID(r)
 	if err != nil {
+		log.Println(err)
 		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
 		return
 	}
@@ -89,14 +92,14 @@ func (h *Handler) DeleteTribeHandler(w http.ResponseWriter, r *http.Request) {
 
 	targetUint, err := strconv.ParseUint(params["tribe_id"], 10, 32)
 	if err != nil {
-		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][ParseUint]: %s", err)
+		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][ParseUint]: %s\n", err)
 		helpers.SendError(w, "error deleting tribe", http.StatusBadRequest)
 
 		return
 	}
 
 	if err = h.DeleteTribe(uint(targetUint)); err != nil {
-		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][DeleteTribe]: %s", err)
+		fmt.Printf("[crud_tribe_handler.go][DeleteTribeHandler][DeleteTribe]: %s\n", err)
 		helpers.SendError(w, "error deleting tribe", http.StatusBadRequest)
 		return
 	}
@@ -350,7 +353,7 @@ func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	tribeUint, err := strconv.ParseUint(params["tribe_id"], 10, 32)
 	if err != nil {
-		fmt.Printf("[crud_tribe_handler.go][RemoveAssign][ParseUint]: %s", err)
+		fmt.Printf("[crud_tribe_handler.go][RemoveAssign][ParseUint]: %s\n", err)
 		helpers.SendError(w, "error remove user", http.StatusBadRequest)
 		return
 	}

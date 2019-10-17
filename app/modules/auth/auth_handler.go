@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"time"
 	"context"
 	"encoding/json"
@@ -24,7 +25,6 @@ const user key = "user"
 func JwtVerify(next http.Handler) http.Handler {
 	return (http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var header = r.Header.Get("Cookie")
-
 		if header == "" {
 			helpers.SendError(w, "Error: Found no token in header", http.StatusBadRequest)
 			return
@@ -108,7 +108,7 @@ func ExtractTokenUID(r *http.Request) (uint64, int64, error) {
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
 		uid, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["UserID"]), 10, 32)
-		role, err := strconv.ParseInt(fmt.Sprintf("%.0f", claims["Role"]), 10, 32)
+		role, err := strconv.ParseInt(fmt.Sprintf("%.0f", claims["Role"]), 10, 0)
 		if err != nil {
 			return 0, 0, err
 		}
@@ -155,9 +155,9 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(oldToken, claims, func(token *jwt.Token) (interface{}, error) {
-		return os.Getenv("SECRET_KEY"), nil
+	claims := Token{}
+	token, err := jwt.ParseWithClaims(oldToken, &claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 
 	if err != nil {
@@ -165,6 +165,7 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 			helpers.SendError(w, "invalid signature token", http.StatusUnauthorized)
 			return
 		}
+		log.Println("error:::::", err)
 		helpers.SendError(w, "failed parsing claims", http.StatusBadRequest)
 		return
 	}
@@ -174,7 +175,7 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) <= 1*time.Minute {
+	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) <= 2*time.Minute {
 		expiresAt := time.Now().Add(3 * time.Minute)
 		claims.ExpiresAt = expiresAt.Unix()
 		newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -183,7 +184,7 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		newTokenString, err := newToken.SignedString(os.Getenv("SECRET_KEY"))
+		newTokenString, err := newToken.SignedString([]byte(os.Getenv("SECRET_KEY")))
 		if err != nil {
 			helpers.SendError(w, "failed to refresh token", http.StatusInternalServerError)
 			return
@@ -195,6 +196,7 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 			Expires: expiresAt,
 			Path: "/",
 		})
+		log.Println("Token refreshed")
 	}
 	return
 }
