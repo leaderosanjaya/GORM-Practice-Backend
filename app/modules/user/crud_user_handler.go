@@ -164,6 +164,31 @@ func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
+func (h *Handler) GetUserLeadingTribe(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	params := mux.Vars(r)
+	_, role, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
+		return
+	}
+	if role < 1 {
+		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
+		return
+	}
+
+	var tribesAssign []models.TribeAssign
+	var tribes []models.Tribe
+	h.DB.Where("user_id = ?", params["user_id"]).Find(&tribesAssign)
+	for _, v := range tribesAssign {
+		var tribe models.Tribe
+		h.DB.Preload("Leads").Preload("Members").Preload("Keys").First(&tribe, v.TribeID)
+		tribes = append(tribes, tribe)
+	}
+	write, _ := json.Marshal(&tribes)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
+
 // GetTribeByUser get users tribe
 func (h *Handler) GetTribeByUser(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
