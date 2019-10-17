@@ -175,8 +175,8 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) <= 2*time.Minute {
-		expiresAt := time.Now().Add(3 * time.Minute)
+	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) <= 3*time.Minute {
+		expiresAt := time.Now().Add(10 * time.Minute)
 		claims.ExpiresAt = expiresAt.Unix()
 		newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		if err != nil {
