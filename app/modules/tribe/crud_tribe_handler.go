@@ -395,6 +395,35 @@ func (h *Handler) RemoveAssign(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// GetUserByTribeID returns as it says
+func (h *Handler) GetUserByTribeID(w http.ResponseWriter, r *http.Request) {
+	// Get User ID
+	_, _, err := auth.ExtractTokenUID(r)
+	if err != nil {
+		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
+		return
+	}
+	params := mux.Vars(r)
+	var tribe models.Tribe
+	h.DB.Preload("Members").Preload("Tribes").Find(&tribe, params["tribe_id"])
+
+	var userIDs []uint
+	for _, member := range tribe.Members {
+		userIDs = append(userIDs, member.UserID)
+	}
+
+	var users []models.User
+	for _, userID := range userIDs {
+		var user models.User
+		h.DB.First(&user, userID)
+		users = append(users, user)
+	}
+
+	write, _ := json.Marshal(&users)
+	helpers.RenderJSON(w, write, http.StatusOK)
+}
+
+// GetAllTribes returns all tribe
 func (h *Handler) GetAllTribes(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
 	_, role, err := auth.ExtractTokenUID(r)
