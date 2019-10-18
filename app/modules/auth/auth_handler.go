@@ -200,3 +200,43 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 	return
 }
+
+// Logout is to set token expiration time to 
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	oldToken := ExtractToken(r)
+	if oldToken == "" {
+		helpers.SendError(w, "request has no authorization token", http.StatusUnauthorized)
+		return
+	}
+
+	claims := Token{}
+	token, err := jwt.ParseWithClaims(oldToken, &claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("SECRET_KEY")), nil
+	})
+
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			helpers.SendError(w, "invalid signature token", http.StatusUnauthorized)
+			return
+		}
+		log.Println("error:::::", err)
+		helpers.SendError(w, "failed parsing claims", http.StatusBadRequest)
+		return
+	}
+
+	if !token.Valid{
+		helpers.SendError(w, "token invalid", http.StatusUnauthorized)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name: "token",
+		Value: "deleted",
+		Expires: time.Now().Add(-100 * time.Hour),
+		Path: "/",
+	})
+	log.Println("Token expired")
+
+	helpers.SendOK(w, "Logged Out")
+	return
+}
