@@ -148,15 +148,15 @@ func (h *Handler) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
-	_, role, err := auth.ExtractTokenUID(r)
+	_, _, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
 		return
 	}
-	if role < 1 {
-		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
-		return
-	}
+	// if role < 1 {
+	// 	helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	var users []models.User
 	h.DB.Preload("Keys").Preload("Tribes").Preload("SharedKeys").Where("role = ?", "0").Order("user_id desc").Find(&users)
@@ -164,16 +164,13 @@ func (h *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	helpers.RenderJSON(w, write, http.StatusOK)
 }
 
+//  GetUserLeadingTribe as
 func (h *Handler) GetUserLeadingTribe(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
 	params := mux.Vars(r)
-	_, role, err := auth.ExtractTokenUID(r)
+	_, _, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.SendError(w, "error UID extraction", http.StatusInternalServerError)
-		return
-	}
-	if role < 1 {
-		helpers.SendError(w, "Request denied, superadmin only", http.StatusUnauthorized)
 		return
 	}
 
@@ -214,15 +211,15 @@ func (h *Handler) GetTribeByUser(w http.ResponseWriter, r *http.Request) {
 // GetTribeByUserID get users tribe
 func (h *Handler) GetTribeByUserID(w http.ResponseWriter, r *http.Request) {
 	// Get User ID
-	_, role, err := auth.ExtractTokenUID(r)
+	_, _, err := auth.ExtractTokenUID(r)
 	if err != nil {
 		helpers.SendError(w, "error uid extraction", http.StatusInternalServerError)
 		return
 	}
-	if role < 1 {
-		helpers.SendError(w, "super admin access only", http.StatusForbidden)
-		return
-	}
+	// if role < 1 {
+	// 	helpers.SendError(w, "super admin access only", http.StatusForbidden)
+	// 	return
+	// }
 
 	params := mux.Vars(r)
 	var tribeAss []models.TribeAssign
@@ -231,9 +228,15 @@ func (h *Handler) GetTribeByUserID(w http.ResponseWriter, r *http.Request) {
 	if row := h.DB.Table("tribe_assigns").Find(&tribeAss, params["user_id"]).RowsAffected; row != 0 {
 		gotTribe = true
 	}
+	var tribes []models.Tribe
+	for _, k := range tribeAss {
+		var tribe models.Tribe
+		h.DB.First(&tribe, k.TribeID)
+		tribes = append(tribes, tribe)
+	}
 
 	resp := map[string]interface{}{"status": gotTribe}
-	resp["tribeAssign"] = tribeAss
+	resp["tribeAssign"] = tribes
 	write, _ := json.Marshal(resp)
 	helpers.RenderJSON(w, write, http.StatusOK)
 }

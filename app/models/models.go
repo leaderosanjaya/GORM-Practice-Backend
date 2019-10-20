@@ -51,13 +51,13 @@ type Key struct {
 	Conditions  []ConditionAssign `json:"conditions,omitempty"`
 }
 
+// ConditionAssign relations key and condition, with value
 type ConditionAssign struct {
 	KeyID       uint   `gorm:"primary_key"`
 	ConditionID uint   `gorm:"primary_key"`
 	Value       string `json:"value" gorm:"type:text;"`
 }
 
-// TODO: ADD GORM
 // Condition struct, used to get all conditions
 type Condition struct {
 	ID            uint              `json:"-" gorm:"primary_key;column:condition_id"`

@@ -53,7 +53,7 @@ func (h *Handler) FindOne(email, password string) map[string]interface{} {
 	var isLead = false
 	tla := TribeLeadAssign{}
 
-	if lead := h.DB.Table("tribe_lead_assigns").Where("lead_id = ?", user.ID).First(&tla).RowsAffected; lead!=0 {
+	if lead := h.DB.Table("tribe_lead_assigns").Where("lead_id = ?", user.ID).First(&tla).RowsAffected; lead != 0 {
 		fmt.Println(lead)
 		isLead = true
 	}
