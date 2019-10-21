@@ -1,15 +1,15 @@
 package auth
 
 import (
-	"log"
-	"time"
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/GORM-practice/app/helpers"
 
@@ -73,10 +73,10 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	tokenExpiresAt := time.Unix(resp["expiresAt"].(int64), 0)
 
 	http.SetCookie(w, &http.Cookie{
-		Name: "token",
-		Value: tokenString,
+		Name:    "token",
+		Value:   tokenString,
 		Expires: tokenExpiresAt,
-		Path: "/",
+		Path:    "/",
 	})
 
 	message, _ := json.Marshal(resp)
@@ -86,7 +86,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 // ExtractToken to extract token from http request header
 func ExtractToken(r *http.Request) string {
-	if cookieToken := r.Header.Get("Cookie"); cookieToken!="" {
+	if cookieToken := r.Header.Get("Cookie"); cookieToken != "" {
 		return strings.Split(cookieToken, "=")[1]
 	}
 	return ""
@@ -170,7 +170,7 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !token.Valid{
+	if !token.Valid {
 		helpers.SendError(w, "token invalid", http.StatusUnauthorized)
 		return
 	}
@@ -178,7 +178,7 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) <= 3*time.Minute {
 		expiresAt := time.Now().Add(10 * time.Minute)
 		claims.ExpiresAt = expiresAt.Unix()
-		newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)	
+		newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		if err != nil {
 			helpers.SendError(w, "failed to refresh token", http.StatusInternalServerError)
 			return
@@ -191,17 +191,17 @@ func refreshToken(w http.ResponseWriter, r *http.Request) {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name: "token",
-			Value: newTokenString,
+			Name:    "token",
+			Value:   newTokenString,
 			Expires: expiresAt,
-			Path: "/",
+			Path:    "/",
 		})
 		log.Println("Token refreshed")
 	}
 	return
 }
 
-// Logout is to set token expiration time to 
+// Logout is to set token expiration time to
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	oldToken := ExtractToken(r)
 	if oldToken == "" {
@@ -224,16 +224,16 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !token.Valid{
+	if !token.Valid {
 		helpers.SendError(w, "token invalid", http.StatusUnauthorized)
 		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name: "token",
-		Value: "deleted",
+		Name:    "token",
+		Value:   "deleted",
 		Expires: time.Now().Add(-100 * time.Hour),
-		Path: "/",
+		Path:    "/",
 	})
 	log.Println("Token expired")
 
